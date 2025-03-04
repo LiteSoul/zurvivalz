@@ -21,7 +21,7 @@ class Game {
       this.camera,
       this.renderer.domElement
     );
-    this.scene.add(this.controls.getObject());
+    this.scene.add(this.controls.object);
     this.camera.position.y = 1.6; // Eye level height
 
     // Movement states
@@ -185,7 +185,7 @@ class Game {
     this.velocity.y += this.gravity * delta;
 
     // Update player position
-    const player = this.controls.getObject();
+    const player = this.controls.object;
     player.position.y += this.velocity.y * delta;
 
     // Ground collision
