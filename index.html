@@ -1,27 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zombie Survival Game - Phase 1</title>
+    <meta charset="utf-8" />
+    <title>My first three.js app</title>
     <style>
       body {
         margin: 0;
-        overflow: hidden;
-      }
-      #blocker {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      #instructions {
-        color: white;
-        font-size: 24px;
-        font-family: Arial, sans-serif;
       }
       canvas {
         display: block;
@@ -29,12 +13,6 @@
     </style>
   </head>
   <body>
-    <div id="blocker">
-      <div id="instructions">Click to Play</div>
-    </div>
-    <!-- Load Three.js and PointerLockControls -->
-    <script src="three.js"></script>
-    <script src="PointerLockControls.js"></script>
-    <script src="game.js"></script>
+    <script type="module" src="/main.js"></script>
   </body>
 </html>
