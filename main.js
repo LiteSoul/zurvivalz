@@ -142,27 +142,35 @@ class Game {
     document.addEventListener("keyup", (event) => this.onKeyUp(event));
     document.addEventListener("mousedown", () => this.shoot());
 
-    const blocker = document.createElement("div");
-    blocker.id = "blocker";
-    blocker.style.position = "absolute";
-    blocker.style.width = "100%";
-    blocker.style.height = "100%";
-    blocker.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-    blocker.style.display = "flex";
-    blocker.style.justifyContent = "center";
-    blocker.style.alignItems = "center";
-    blocker.innerHTML =
-      '<div style="color: white; font-size: 24px;">Click to Play</div>';
-    document.body.appendChild(blocker);
+    // Add Start button instead of full-screen blocker
+    const startButton = document.createElement("button");
+    startButton.id = "startButton";
+    startButton.innerText = "Start";
+    startButton.style.position = "absolute";
+    startButton.style.top = "50%";
+    startButton.style.left = "50%";
+    startButton.style.transform = "translate(-50%, -50%)";
+    startButton.style.padding = "15px 30px";
+    startButton.style.fontSize = "24px";
+    startButton.style.backgroundColor = "#4CAF50"; // Green
+    startButton.style.color = "white";
+    startButton.style.border = "none";
+    startButton.style.borderRadius = "5px";
+    startButton.style.cursor = "pointer";
+    document.body.appendChild(startButton);
 
-    blocker.addEventListener("click", () => this.controls.lock());
+    startButton.addEventListener("click", () => {
+      this.controls.lock(); // Lock pointer to start game
+      startButton.style.display = "none"; // Hide button
+    });
+
+    // Handle pointer lock changes (e.g., ESC key)
     document.addEventListener("pointerlockchange", () => {
-      if (document.pointerLockElement === this.renderer.domElement) {
-        this.controls.isLocked = true;
-        blocker.style.display = "none";
-      } else {
-        this.controls.isLocked = false;
-        blocker.style.display = "flex";
+      if (document.pointerLockElement !== this.renderer.domElement) {
+        // If pointer unlocks (e.g., via ESC), show Start button again unless game over
+        if (!this.isGameOver) {
+          startButton.style.display = "block";
+        }
       }
     });
 
