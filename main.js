@@ -50,6 +50,8 @@ class Game {
     this.health = 100;
     this.score = 0;
     this.isGameOver = false;
+    this.isStarted = false;
+    this.isPaused = false;
 
     // WaveManager and UI initialization (Phases 4, 5)
     this.waveManager = new WaveManager(this.scene, this.controls.object, this);
@@ -162,13 +164,21 @@ class Game {
     startButton.addEventListener("click", () => {
       this.controls.lock(); // Lock pointer to start game
       startButton.style.display = "none"; // Hide button
+      if (!this.isStarted) {
+        this.isStarted = true;
+        this.animate(); // Start the game loop
+      }
+      this.isPaused = false; // Resume if paused
     });
 
     // Handle pointer lock changes (e.g., ESC key)
     document.addEventListener("pointerlockchange", () => {
-      if (document.pointerLockElement !== this.renderer.domElement) {
-        // If pointer unlocks (e.g., via ESC), show Start button again unless game over
+      if (document.pointerLockElement === this.renderer.domElement) {
+        this.isPaused = false; // Resume on lock
+      } else {
+        // If pointer unlocks (eg., via ESC), pause and show Start button unless game over
         if (!this.isGameOver) {
+          this.isPaused = true;
           startButton.style.display = "block";
         }
       }
@@ -263,7 +273,7 @@ class Game {
 
   // Game loop (Phases 2, 3, 4, 5)
   update() {
-    if (this.isGameOver) return;
+    if (this.isGameOver || this.isPaused) return; // Skip updates if paused or game over
 
     const delta = this.clock.getDelta();
 
@@ -312,8 +322,9 @@ class Game {
     this.ui.hideGameOver();
   }
 
-  // Animation loop (Phase 2)
+  // Animation loop (Phase 2, modified to start on button click)
   animate() {
+    if (!this.isStarted) return; // Only animate if game has started
     requestAnimationFrame(() => this.animate());
     this.update();
     this.renderer.render(this.scene, this.camera);
