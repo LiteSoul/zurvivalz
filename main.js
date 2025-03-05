@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
-import { Zombie } from "./Zombie.js";
-import { WaveManager } from "./WaveManager.js"; // Ensure WaveManager is included
-import { UI } from "./UI.js"; // Ensure UI is included
+import { Zombie } from "./Zombie.js"; // Imported for reference, used by WaveManager
+import { WaveManager } from "./WaveManager.js"; // Manages zombie spawning and updates
+import { UI } from "./UI.js"; // Handles health, score, and game over UI
 
 class Game {
   constructor() {
@@ -291,7 +291,7 @@ class Game {
     this.ui.updateScore(this.score);
 
     // Check for game over (Phase 5)
-    if (this.health <= 0) {
+    if (this.health <= 0 && !this.isGameOver) {
       this.isGameOver = true;
       this.ui.showGameOver(() => this.restart());
     }
