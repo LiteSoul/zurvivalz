@@ -1,9 +1,12 @@
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
+import { Zombie } from "./Zombie.js";
+import { WaveManager } from "./WaveManager.js"; // Ensure WaveManager is included
+import { UI } from "./UI.js"; // Ensure UI is included
 
 class Game {
   constructor() {
-    // Scene, camera, renderer
+    // Scene, camera, renderer (Phase 2)
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(
       75, // Field of view
@@ -16,7 +19,7 @@ class Game {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(this.renderer.domElement);
 
-    // First-person controls
+    // First-person controls (Phase 2)
     this.controls = new PointerLockControls(
       this.camera,
       this.renderer.domElement
@@ -24,7 +27,7 @@ class Game {
     this.scene.add(this.controls.object);
     this.camera.position.y = 1.6; // Eye level height
 
-    // Movement states
+    // Movement states (Phase 2)
     this.moveForward = false;
     this.moveBackward = false;
     this.moveLeft = false;
@@ -33,64 +36,66 @@ class Game {
     this.moveSpeed = 10; // Units per second
     this.jumpSpeed = 10; // Initial jump velocity
     this.gravity = -30; // Gravity acceleration
-
     // Velocity for jumping
     this.velocity = new THREE.Vector3(0, 0, 0);
 
-    // Clock for smooth timing
+    // Clock for smooth timing (Phase 2)
     this.clock = new THREE.Clock();
 
-    // Shooting states
+    // Shooting states (Phase 2)
     this.canShoot = true;
-    this.shootCooldown = 0.5; // Seconds between shots
+    this.shootCooldown = 0.5;
 
-    // Set up environment and objects
+    // Player properties (Phases 3, 4, 5)
+    this.health = 100;
+    this.score = 0;
+    this.isGameOver = false;
+
+    // WaveManager and UI initialization (Phases 4, 5)
+    this.waveManager = new WaveManager(this.scene, this.controls.object, this);
+    this.ui = new UI();
+
+    // Environment and objects (Phase 2)
     this.setupEnvironment();
     this.addTestObjects();
 
-    // Set up audio for shooting
+    // Audio for shooting (Phase 2)
     this.setupAudio();
 
-    // Set up crosshair
+    // Crosshair (Phase 2)
     this.setupCrosshair();
 
-    // Event listeners
+    // Event listeners (Phase 2)
     this.setupEventListeners();
 
-    // Start the game loop
+    // Start game loop
     this.animate();
   }
 
+  // Environment setup (Phase 2)
   setupEnvironment() {
-    // Sky color
-    this.scene.background = new THREE.Color(0x87ceeb); // Light blue sky
-
-    // Load and apply ground texture
+    this.scene.background = new THREE.Color(0x87ceeb);
     const textureLoader = new THREE.TextureLoader();
     const groundTexture = textureLoader.load("/ground.jpg");
     groundTexture.wrapS = THREE.RepeatWrapping;
     groundTexture.wrapT = THREE.RepeatWrapping;
-    groundTexture.repeat.set(100, 100); // Repeat texture for large ground
-
-    // Create textured ground
+    groundTexture.repeat.set(100, 100);
     const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
     const groundMaterial = new THREE.MeshPhongMaterial({ map: groundTexture });
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = -Math.PI / 2; // Lay flat
+    ground.rotation.x = -Math.PI / 2;
     ground.position.y = 0;
     this.scene.add(ground);
 
-    // Add lighting
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(1, 1, 1).normalize();
     this.scene.add(directionalLight);
-
-    const ambientLight = new THREE.AmbientLight(0x404040); // Soft ambient light
+    const ambientLight = new THREE.AmbientLight(0x404040);
     this.scene.add(ambientLight);
   }
 
+  // Test objects (Phase 2)
   addTestObjects() {
-    // Add red cubes for spatial reference and shooting targets
     const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
     const cubeMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
     const positions = [
@@ -99,7 +104,6 @@ class Game {
       [0, 0.5, 5],
       [-5, 0.5, -5],
     ];
-
     positions.forEach((pos) => {
       const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
       cube.position.set(pos[0], pos[1], pos[2]);
@@ -107,6 +111,7 @@ class Game {
     });
   }
 
+  // Audio setup (Phase 2)
   setupAudio() {
     const listener = new THREE.AudioListener();
     this.camera.add(listener);
@@ -118,6 +123,7 @@ class Game {
     });
   }
 
+  // Crosshair (Phase 2)
   setupCrosshair() {
     const crosshair = document.createElement("div");
     crosshair.style.position = "absolute";
@@ -130,15 +136,12 @@ class Game {
     document.body.appendChild(crosshair);
   }
 
+  // Event listeners (Phase 2)
   setupEventListeners() {
-    // Keyboard input
     document.addEventListener("keydown", (event) => this.onKeyDown(event));
     document.addEventListener("keyup", (event) => this.onKeyUp(event));
-
-    // Shooting input
     document.addEventListener("mousedown", () => this.shoot());
 
-    // Pointer lock UI
     const blocker = document.createElement("div");
     blocker.id = "blocker";
     blocker.style.position = "absolute";
@@ -152,10 +155,7 @@ class Game {
       '<div style="color: white; font-size: 24px;">Click to Play</div>';
     document.body.appendChild(blocker);
 
-    blocker.addEventListener("click", () => {
-      this.controls.lock();
-    });
-
+    blocker.addEventListener("click", () => this.controls.lock());
     document.addEventListener("pointerlockchange", () => {
       if (document.pointerLockElement === this.renderer.domElement) {
         this.controls.isLocked = true;
@@ -166,7 +166,6 @@ class Game {
       }
     });
 
-    // Handle window resize
     window.addEventListener("resize", () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
@@ -174,6 +173,7 @@ class Game {
     });
   }
 
+  // Keyboard controls (Phase 2)
   onKeyDown(event) {
     switch (event.code) {
       case "KeyW":
@@ -214,64 +214,97 @@ class Game {
     }
   }
 
+  // Shooting with zombie damage (Phases 2 and 4)
   shoot() {
-    // Only shoot if pointer is locked and cooldown has expired
-    if (!this.controls.isLocked || !this.canShoot) return;
+    if (!this.controls.isLocked || !this.canShoot || this.isGameOver) return;
 
     this.canShoot = false;
-    setTimeout(() => {
-      this.canShoot = true;
-    }, this.shootCooldown * 1000);
+    setTimeout(() => (this.canShoot = true), this.shootCooldown * 1000);
 
-    // Play shooting sound
+    // Play shooting sound (Phase 2)
     if (this.shootSound.isPlaying) this.shootSound.stop();
     this.shootSound.play();
 
-    // Create raycaster from camera (center of screen)
+    // Raycasting to hit zombies (Phase 4)
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
-
-    // Detect intersections with scene objects
-    const intersects = raycaster.intersectObjects(this.scene.children, true);
+    const intersects = raycaster.intersectObjects(
+      this.waveManager.zombies.map((z) => z.model)
+    );
     if (intersects.length > 0) {
-      console.log("Hit:", intersects[0].object);
+      const zombie = this.waveManager.zombies.find(
+        (z) => z.model === intersects[0].object
+      );
+      if (zombie && zombie.takeDamage(20)) {
+        // Assume Zombie.js has takeDamage()
+        this.waveManager.zombies = this.waveManager.zombies.filter(
+          (z) => z !== zombie
+        );
+        this.scene.remove(zombie.model); // Remove from scene
+        this.score += 10; // Increase score
+        this.ui.updateScore(this.score); // Update UI immediately
+      }
     }
 
-    // Add muzzle flash
+    // Muzzle flash (Phase 2)
     const flash = new THREE.PointLight(0xffffff, 1, 50);
-    flash.position.set(0, 0, -1); // Position in front of camera
+    flash.position.set(0, 0, -1);
     this.camera.add(flash);
-    setTimeout(() => {
-      this.camera.remove(flash);
-    }, 50); // Remove after 50ms
+    setTimeout(() => this.camera.remove(flash), 50);
   }
 
+  // Game loop (Phases 2, 3, 4, 5)
   update() {
-    const delta = this.clock.getDelta(); // Time since last frame
+    if (this.isGameOver) return;
 
-    // Apply gravity
+    const delta = this.clock.getDelta();
+
+    // Player movement and physics (Phase 2)
     this.velocity.y += this.gravity * delta;
-
-    // Update player position
     const player = this.controls.object;
     player.position.y += this.velocity.y * delta;
-
-    // Ground collision
     if (player.position.y < 1.6) {
-      player.position.y = 1.6; // Reset to ground level
+      player.position.y = 1.6;
       this.velocity.y = 0;
-      this.canJump = true; // Allow jumping again
+      this.canJump = true;
     }
-
-    // Horizontal movement relative to camera direction
     if (this.controls.isLocked) {
       if (this.moveForward) player.translateZ(-this.moveSpeed * delta);
       if (this.moveBackward) player.translateZ(this.moveSpeed * delta);
       if (this.moveLeft) player.translateX(-this.moveSpeed * delta);
       if (this.moveRight) player.translateX(this.moveSpeed * delta);
     }
+
+    // Update WaveManager for zombie spawning and movement (Phases 3, 4)
+    this.waveManager.update(delta);
+
+    // Update UI with health and score (Phase 5)
+    this.ui.updateHealth(this.health);
+    this.ui.updateScore(this.score);
+
+    // Check for game over (Phase 5)
+    if (this.health <= 0) {
+      this.isGameOver = true;
+      this.ui.showGameOver(() => this.restart());
+    }
   }
 
+  // Restart game (Phase 5)
+  restart() {
+    this.health = 100;
+    this.score = 0;
+    this.isGameOver = false;
+    this.waveManager.zombies.forEach((zombie) =>
+      this.scene.remove(zombie.model)
+    );
+    this.waveManager.zombies = [];
+    this.waveManager.wave = 0;
+    this.waveManager.nextSpawnTime =
+      Date.now() + this.waveManager.spawnInterval;
+    this.ui.hideGameOver();
+  }
+
+  // Animation loop (Phase 2)
   animate() {
     requestAnimationFrame(() => this.animate());
     this.update();
