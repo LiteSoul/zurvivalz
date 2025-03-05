@@ -138,7 +138,7 @@ class Game {
     document.body.appendChild(crosshair);
   }
 
-  // Event listeners (Phase 2)
+  // Event listeners (Phase 2, modified for Start/Resume button)
   setupEventListeners() {
     document.addEventListener("keydown", (event) => this.onKeyDown(event));
     document.addEventListener("keyup", (event) => this.onKeyUp(event));
@@ -147,7 +147,7 @@ class Game {
     // Add Start button instead of full-screen blocker
     const startButton = document.createElement("button");
     startButton.id = "startButton";
-    startButton.innerText = "Start";
+    startButton.innerText = "Start"; // Initial text
     startButton.style.position = "absolute";
     startButton.style.top = "50%";
     startButton.style.left = "50%";
@@ -167,8 +167,10 @@ class Game {
       if (!this.isStarted) {
         this.isStarted = true;
         this.animate(); // Start the game loop
+      } else if (this.isPaused) {
+        this.isPaused = false; // Resume if paused
+        this.animate(); // Restart the animation loop
       }
-      this.isPaused = false; // Resume if paused
     });
 
     // Handle pointer lock changes (e.g., ESC key)
@@ -176,9 +178,10 @@ class Game {
       if (document.pointerLockElement === this.renderer.domElement) {
         this.isPaused = false; // Resume on lock
       } else {
-        // If pointer unlocks (eg., via ESC), pause and show Start button unless game over
+        // If pointer unlocks (e.g., via ESC), pause and show Start/Resume button unless game over
         if (!this.isGameOver) {
           this.isPaused = true;
+          startButton.innerText = this.isStarted ? "Resume" : "Start"; // Toggle text
           startButton.style.display = "block";
         }
       }
@@ -322,9 +325,9 @@ class Game {
     this.ui.hideGameOver();
   }
 
-  // Animation loop (Phase 2, modified to start on button click)
+  // Animation loop (Phase 2, modified for start and pause)
   animate() {
-    if (!this.isStarted) return; // Only animate if game has started
+    if (!this.isStarted || this.isPaused) return; // Exit if not started or paused
     requestAnimationFrame(() => this.animate());
     this.update();
     this.renderer.render(this.scene, this.camera);
