@@ -177,10 +177,12 @@ class Game {
     document.addEventListener("pointerlockchange", () => {
       if (document.pointerLockElement === this.renderer.domElement) {
         this.isPaused = false; // Resume on lock
+        this.clock.start(); // Resume clock
       } else {
         // If pointer unlocks (e.g., via ESC), pause and show Start/Resume button unless game over
         if (!this.isGameOver) {
           this.isPaused = true;
+          this.clock.stop(); // Stop clock to prevent delta accumulation
           startButton.innerText = this.isStarted ? "Resume" : "Start"; // Toggle text
           startButton.style.display = "block";
         }
