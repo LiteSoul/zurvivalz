@@ -277,6 +277,14 @@ class Game {
     flash.position.set(0, 0, -1);
     this.camera.add(flash);
     setTimeout(() => this.camera.remove(flash), 50);
+
+    // Shooting animation (Phase 2)
+    const originalGunPosition = this.gun.position.clone();
+    const recoilDistance = 0.1;
+    this.gun.position.z += recoilDistance;
+    setTimeout(() => {
+      this.gun.position.copy(originalGunPosition);
+    }, 150);
   }
 
   // Gun Model Setup (Phase 2)
