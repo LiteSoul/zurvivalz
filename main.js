@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
-import { Zombie } from "./Zombie.js";
-import { WaveManager } from "./WaveManager.js"; // Ensure WaveManager is included
-import { UI } from "./UI.js"; // Ensure UI is included
+import { Zombie } from "./Zombie.js"; // Imported for reference, used by WaveManager
+import { WaveManager } from "./WaveManager.js"; // Manages zombie spawning and updates
+import { UI } from "./UI.js"; // Handles health, score, and game over UI
 
 class Game {
   constructor() {
@@ -50,6 +50,8 @@ class Game {
     this.health = 100;
     this.score = 0;
     this.isGameOver = false;
+    this.isStarted = false;
+    this.isPaused = false;
 
     // WaveManager and UI initialization (Phases 4, 5)
     this.waveManager = new WaveManager(this.scene, this.controls.object, this);
@@ -136,33 +138,54 @@ class Game {
     document.body.appendChild(crosshair);
   }
 
-  // Event listeners (Phase 2)
+  // Event listeners (Phase 2, modified for Start/Resume button)
   setupEventListeners() {
     document.addEventListener("keydown", (event) => this.onKeyDown(event));
     document.addEventListener("keyup", (event) => this.onKeyUp(event));
     document.addEventListener("mousedown", () => this.shoot());
 
-    const blocker = document.createElement("div");
-    blocker.id = "blocker";
-    blocker.style.position = "absolute";
-    blocker.style.width = "100%";
-    blocker.style.height = "100%";
-    blocker.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-    blocker.style.display = "flex";
-    blocker.style.justifyContent = "center";
-    blocker.style.alignItems = "center";
-    blocker.innerHTML =
-      '<div style="color: white; font-size: 24px;">Click to Play</div>';
-    document.body.appendChild(blocker);
+    // Add Start button instead of full-screen blocker
+    const startButton = document.createElement("button");
+    startButton.id = "startButton";
+    startButton.innerText = "Start"; // Initial text
+    startButton.style.position = "absolute";
+    startButton.style.top = "50%";
+    startButton.style.left = "50%";
+    startButton.style.transform = "translate(-50%, -50%)";
+    startButton.style.padding = "15px 30px";
+    startButton.style.fontSize = "24px";
+    startButton.style.backgroundColor = "#4CAF50"; // Green
+    startButton.style.color = "white";
+    startButton.style.border = "none";
+    startButton.style.borderRadius = "5px";
+    startButton.style.cursor = "pointer";
+    document.body.appendChild(startButton);
 
-    blocker.addEventListener("click", () => this.controls.lock());
+    startButton.addEventListener("click", () => {
+      this.controls.lock(); // Lock pointer to start game
+      startButton.style.display = "none"; // Hide button
+      if (!this.isStarted) {
+        this.isStarted = true;
+        this.animate(); // Start the game loop
+      } else if (this.isPaused) {
+        this.isPaused = false; // Resume if paused
+        this.animate(); // Restart the animation loop
+      }
+    });
+
+    // Handle pointer lock changes (e.g., ESC key)
     document.addEventListener("pointerlockchange", () => {
       if (document.pointerLockElement === this.renderer.domElement) {
-        this.controls.isLocked = true;
-        blocker.style.display = "none";
+        this.isPaused = false; // Resume on lock
+        this.clock.start(); // Resume clock
       } else {
-        this.controls.isLocked = false;
-        blocker.style.display = "flex";
+        // If pointer unlocks (e.g., via ESC), pause and show Start/Resume button unless game over
+        if (!this.isGameOver) {
+          this.isPaused = true;
+          this.clock.stop(); // Stop clock to prevent delta accumulation
+          startButton.innerText = this.isStarted ? "Resume" : "Start"; // Toggle text
+          startButton.style.display = "block";
+        }
       }
     });
 
@@ -255,7 +278,7 @@ class Game {
 
   // Game loop (Phases 2, 3, 4, 5)
   update() {
-    if (this.isGameOver) return;
+    if (this.isGameOver || this.isPaused) return; // Skip updates if paused or game over
 
     const delta = this.clock.getDelta();
 
@@ -283,7 +306,7 @@ class Game {
     this.ui.updateScore(this.score);
 
     // Check for game over (Phase 5)
-    if (this.health <= 0) {
+    if (this.health <= 0 && !this.isGameOver) {
       this.isGameOver = true;
       this.ui.showGameOver(() => this.restart());
     }
@@ -304,8 +327,9 @@ class Game {
     this.ui.hideGameOver();
   }
 
-  // Animation loop (Phase 2)
+  // Animation loop (Phase 2, modified for start and pause)
   animate() {
+    if (!this.isStarted || this.isPaused) return; // Exit if not started or paused
     requestAnimationFrame(() => this.animate());
     this.update();
     this.renderer.render(this.scene, this.camera);
