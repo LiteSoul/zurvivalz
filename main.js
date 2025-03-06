@@ -54,7 +54,7 @@ class Game {
     this.isPaused = false;
 
     // WaveManager and UI initialization (Phases 4, 5)
-    this.waveManager = new WaveManager(this.scene, this.controls.object, this);
+    this.waveManager = new WaveManager(this.scene, this.camera, this);
     this.ui = new UI();
 
     // Environment and objects (Phase 2)
@@ -304,12 +304,6 @@ class Game {
     // Update UI with health and score (Phase 5)
     this.ui.updateHealth(this.health);
     this.ui.updateScore(this.score);
-
-    // Check for game over (Phase 5)
-    if (this.health <= 0 && !this.isGameOver) {
-      this.isGameOver = true;
-      this.ui.showGameOver(() => this.restart());
-    }
   }
 
   // Restart game (Phase 5)

@@ -2,9 +2,9 @@
 import { Zombie } from "./Zombie.js";
 
 export class WaveManager {
-  constructor(scene, player, game) {
+  constructor(scene, playerCamera, game) {
     this.scene = scene;
-    this.player = player;
+    this.playerCamera = playerCamera;
     this.game = game; // Reference to Game instance for health access
     this.wave = 0;
     this.zombies = [];
@@ -17,7 +17,7 @@ export class WaveManager {
     this.wave++;
     const zombieCount = this.wave * 3; // Increasing difficulty
     for (let i = 0; i < zombieCount; i++) {
-      const zombie = new Zombie(this.scene, this.player);
+      const zombie = new Zombie(this.scene, this.playerCamera, this.game);
       this.zombies.push(zombie);
     }
   }

@@ -2,13 +2,15 @@
 import * as THREE from "three";
 
 export class Zombie {
-  constructor(scene, player) {
+  constructor(scene, player, game) {
     this.scene = scene;
     this.player = player;
+    this.game = game;
     this.health = 100;
     this.speed = 2 + Math.random(); // Slight speed variation
     this.model = this.createModel();
     this.scene.add(this.model);
+    this.collided = false; // Flag to prevent continuous damage
   }
 
   createModel() {
@@ -33,10 +35,29 @@ export class Zombie {
     direction.subVectors(this.player.position, this.model.position).normalize();
     this.model.position.addScaledVector(direction, this.speed * delta);
 
-    // Check collision with player
-    const distance = this.model.position.distanceTo(this.player.position);
-    if (distance < 1.5) {
-      this.player.health -= 10 * delta; // Damage scaled by time
+    // Bounding box collision detection
+    const playerPosition = this.player.position;
+    const playerSize = 1; // Approximate player size
+    const playerBox = new THREE.Box3(
+      new THREE.Vector3(
+        playerPosition.x - playerSize / 2,
+        playerPosition.y - playerSize / 2,
+        playerPosition.z - playerSize / 2
+      ),
+      new THREE.Vector3(
+        playerPosition.x + playerSize / 2,
+        playerPosition.y + playerSize / 2,
+        playerPosition.z + playerSize / 2
+      )
+    );
+    const zombieBox = new THREE.Box3().setFromObject(this.model);
+    if (playerBox.intersectsBox(zombieBox)) {
+      if (!this.collided) {
+        this.game.health -= 10; // Reduce health on collision
+        this.collided = true; // Set flag
+      }
+    } else {
+      this.collided = false; // Reset flag when no longer colliding
     }
   }
 
