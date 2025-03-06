@@ -67,6 +67,9 @@ class Game {
     // Crosshair (Phase 2)
     this.setupCrosshair();
 
+    // Gun Model (Phase 2)
+    this.setupGunModel();
+
     // Event listeners (Phase 2)
     this.setupEventListeners();
 
@@ -276,6 +279,15 @@ class Game {
     setTimeout(() => this.camera.remove(flash), 50);
   }
 
+  // Gun Model Setup (Phase 2)
+  setupGunModel() {
+    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.5);
+    const material = new THREE.MeshPhongMaterial({ color: 0x808080 });
+    this.gun = new THREE.Mesh(geometry, material);
+    this.gun.position.set(0.3, -0.3, -0.5); // Position relative to camera
+    this.camera.add(this.gun); // Add as child of camera
+  }
+
   // Game loop (Phases 2, 3, 4, 5)
   update() {
     if (this.isGameOver || this.isPaused) return; // Skip updates if paused or game over
@@ -304,6 +316,12 @@ class Game {
     // Update UI with health and score (Phase 5)
     this.ui.updateHealth(this.health);
     this.ui.updateScore(this.score);
+
+    // Check for game over (Phase 5)
+    if (this.health <= 0 && !this.isGameOver) {
+      this.isGameOver = true;
+      this.ui.showGameOver(() => this.restart());
+    }
   }
 
   // Restart game (Phase 5)
