@@ -9,8 +9,9 @@ A first-person zombie survival game built with Three.js. Survive against waves o
 - **First-person perspective**
 - **Simple shooting mechanics**
 - **Basic zombie AI**
-- ~~Health system~~
+- **Health system**
 - **Wave-based zombie spawning**
+- **Ammo System**
 
 ### Gameplay Elements
 
@@ -19,7 +20,7 @@ A first-person zombie survival game built with Three.js. Survive against waves o
 - **WASD movement controls**
 - **Mouse look for camera control**
 - **Hold SPACE to shoot**
-- ~~Health system (100 HP)~~
+- **Health system (100 HP)**
 - **Simple crosshair for aiming**
 
 ### Zombie Type
@@ -27,16 +28,23 @@ A first-person zombie survival game built with Three.js. Survive against waves o
 - **Basic Zombie**
   - **Follows player**
   - **Moderate health**
-  - ~~Deals damage on contact~~
+  - **Deals damage on contact**
   - **Spawns in waves**
   - ~~Simple pathfinding~~
 
+### Ammo
+
+- **Players start with limited ammo.**
+- **Shooting consumes ammo.**
+- **Ammo can be replenished by collecting ammo magazines.**
+- **Ammo magazines spawn randomly in the environment.**
+
 ### Game Loop
 
-1. Player starts with full health
-2. Zombies spawn in waves
-3. Player must shoot zombies to survive
-4. Game ends when player's health reaches 0
+1.  Player starts with full health
+2.  Zombies spawn in waves
+3.  Player must shoot zombies to survive
+4.  Game ends when player's health reaches 0
 
 ## Additional Features
 
@@ -44,8 +52,9 @@ A first-person zombie survival game built with Three.js. Survive against waves o
 - \***\*Muzzle Flash\*\***
 - \***\*Start/Resume Button\*\***
 - \***\*Jump\*\***
+- \***\*Ammo System\*\***
 
-—
+---
 
 ### **Development Phases**
 
@@ -60,11 +69,11 @@ A first-person zombie survival game built with Three.js. Survive against waves o
 
 ### **Phase 2: Shooting Mechanics**
 
-- ~~Implement basic gun model~~
-- ~~Add shooting animation~~
-- ~~Create bullet system~~
+- **Implement basic gun model**
+- **Add shooting animation**
+- **Create bullet system**
 - **Add crosshair UI**
-- ~~Implement bullet collision detection~~
+- **Implement bullet collision detection**
 - _Test shooting mechanics_
 
 ### **Phase 3: Basic Zombie Implementation**
@@ -72,14 +81,14 @@ A first-person zombie survival game built with Three.js. Survive against waves o
 - **Create basic zombie model**
 - **Implement zombie spawning system**
 - **Add simple zombie movement**
-- ~~Create basic zombie-player collision~~
+- **Create basic zombie-player collision**
 - _Test zombie behavior_
 
 ### **Phase 4: Zombie AI and Combat**
 
 - ~~Implement zombie pathfinding~~
-- ~~Add zombie health system~~
-- ~~Create damage system~~
+- **Add zombie health system**
+- **Create damage system**
 - **Add wave-based spawning**
 - _Test combat mechanics_
 
