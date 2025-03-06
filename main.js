@@ -75,6 +75,9 @@ class Game {
 
     // Start game loop
     this.animate();
+
+    // Bullets array (Phase 2)
+    this.bullets = [];
   }
 
   // Environment setup (Phase 2)
@@ -251,26 +254,21 @@ class Game {
     if (this.shootSound.isPlaying) this.shootSound.stop();
     this.shootSound.play();
 
-    // Raycasting to hit zombies (Phase 4)
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
-    const intersects = raycaster.intersectObjects(
-      this.waveManager.zombies.map((z) => z.model)
-    );
-    if (intersects.length > 0) {
-      const zombie = this.waveManager.zombies.find(
-        (z) => z.model === intersects[0].object
-      );
-      if (zombie && zombie.takeDamage(20)) {
-        // Assume Zombie.js has takeDamage()
-        this.waveManager.zombies = this.waveManager.zombies.filter(
-          (z) => z !== zombie
-        );
-        this.scene.remove(zombie.model); // Remove from scene
-        this.score += 10; // Increase score
-        this.ui.updateScore(this.score); // Update UI immediately
-      }
-    }
+    // Bullet System (Phase 2)
+    const bulletGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+    const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
+
+    // Calculate bullet starting position at the tip of the gun
+    const gunTipPosition = new THREE.Vector3();
+    this.gun.getWorldPosition(gunTipPosition);
+    bullet.position.copy(gunTipPosition);
+
+    const direction = new THREE.Vector3();
+    this.camera.getWorldDirection(direction);
+    bullet.velocity = direction.multiplyScalar(50); // Adjust speed as needed
+    this.scene.add(bullet);
+    this.bullets.push(bullet);
 
     // Muzzle flash (Phase 2)
     const flash = new THREE.PointLight(0xffffff, 1, 50);
@@ -320,6 +318,38 @@ class Game {
 
     // Update WaveManager for zombie spawning and movement (Phases 3, 4)
     this.waveManager.update(delta);
+
+    //Bullet system update
+    if (this.bullets) {
+      this.bullets.forEach((bullet) => {
+        bullet.position.add(bullet.velocity.clone().multiplyScalar(delta));
+
+        // Check for collisions with zombies
+        const zombieCollisions = this.waveManager.zombies.filter((zombie) => {
+          const distance = bullet.position.distanceTo(zombie.model.position);
+          return distance < 0.5; // Adjust collision distance as needed
+        });
+
+        zombieCollisions.forEach((zombie) => {
+          if (zombie.takeDamage(20)) {
+            this.waveManager.zombies = this.waveManager.zombies.filter(
+              (z) => z !== zombie
+            );
+            this.scene.remove(zombie.model);
+            this.score += 10;
+            this.ui.updateScore(this.score);
+          }
+          this.scene.remove(bullet);
+          this.bullets.splice(this.bullets.indexOf(bullet), 1);
+        });
+
+        // Remove bullet if it travels too far
+        if (bullet.position.length() > 100) {
+          this.scene.remove(bullet);
+          this.bullets.splice(this.bullets.indexOf(bullet), 1);
+        }
+      });
+    }
 
     // Update UI with health and score (Phase 5)
     this.ui.updateHealth(this.health);
