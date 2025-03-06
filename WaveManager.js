@@ -1,5 +1,7 @@
 // WaveManager.js
 import { Zombie } from "./Zombie.js";
+import { AmmoMagazine } from "./AmmoMagazine.js";
+import * as THREE from "three";
 
 export class WaveManager {
   constructor(scene, playerCamera, game) {
@@ -11,6 +13,12 @@ export class WaveManager {
     this.spawnInterval = 10000; // New wave every 10 seconds
     this.nextSpawnTime = Date.now() + this.spawnInterval;
     this.spawnWave(); // Initial wave
+
+    // Ammo spawning
+    this.ammoMagazines = [];
+    this.spawnAmmoInterval = 15000; // Spawn ammo every 15 seconds
+    this.nextAmmoSpawnTime = Date.now() + this.spawnAmmoInterval;
+    this.spawnAmmo(); // Initial ammo spawn
   }
 
   spawnWave() {
@@ -22,6 +30,14 @@ export class WaveManager {
     }
   }
 
+  spawnAmmo() {
+    const x = Math.random() * 40 - 20; // Random position between -20 and 20
+    const z = Math.random() * 40 - 20;
+    const position = new THREE.Vector3(x, 1, z); // Assuming ground is at y=0
+    const ammoMagazine = new AmmoMagazine(this.scene, position);
+    this.ammoMagazines.push(ammoMagazine);
+  }
+
   update(delta) {
     // Update all zombies
     this.zombies.forEach((zombie) => zombie.update(delta));
@@ -30,6 +46,12 @@ export class WaveManager {
     if (Date.now() > this.nextSpawnTime && this.zombies.length === 0) {
       this.spawnWave();
       this.nextSpawnTime = Date.now() + this.spawnInterval;
+    }
+
+    // Spawn ammo
+    if (Date.now() > this.nextAmmoSpawnTime) {
+      this.spawnAmmo();
+      this.nextAmmoSpawnTime = Date.now() + this.spawnAmmoInterval;
     }
   }
 }

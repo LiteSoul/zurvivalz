@@ -336,28 +336,64 @@ class Game {
         bullet.position.add(bullet.velocity.clone().multiplyScalar(delta));
 
         // Check for collisions with zombies
-        const zombieCollisions = this.waveManager.zombies.filter((zombie) => {
-          const distance = bullet.position.distanceTo(zombie.model.position);
-          return distance < 0.5; // Adjust collision distance as needed
-        });
+        if (this.waveManager && this.waveManager.zombies) {
+          const zombieCollisions = this.waveManager.zombies.filter((zombie) => {
+            const distance = bullet.position.distanceTo(zombie.model.position);
+            return distance < 0.5; // Adjust collision distance as needed
+          });
 
-        zombieCollisions.forEach((zombie) => {
-          if (zombie.takeDamage(20)) {
-            this.waveManager.zombies = this.waveManager.zombies.filter(
-              (z) => z !== zombie
-            );
-            this.scene.remove(zombie.model);
-            this.score += 10;
-            this.ui.updateScore(this.score);
-          }
-          this.scene.remove(bullet);
-          this.bullets.splice(this.bullets.indexOf(bullet), 1);
-        });
+          zombieCollisions.forEach((zombie) => {
+            if (zombie.takeDamage(20)) {
+              this.waveManager.zombies = this.waveManager.zombies.filter(
+                (z) => z !== zombie
+              );
+              this.scene.remove(zombie.model);
+              this.score += 10;
+              this.ui.updateScore(this.score);
+            }
+            this.scene.remove(bullet);
+            this.bullets.splice(this.bullets.indexOf(bullet), 1);
+          });
+        }
 
         // Remove bullet if it travels too far
         if (bullet.position.length() > 100) {
           this.scene.remove(bullet);
           this.bullets.splice(this.bullets.indexOf(bullet), 1);
+        }
+      });
+    }
+
+    // Ammo collection
+    if (this.waveManager && this.waveManager.ammoMagazines) {
+      const playerPosition = this.controls.object.position;
+      const playerSize = 1; // Approximate player size
+      const playerBox = new THREE.Box3(
+        new THREE.Vector3(
+          playerPosition.x - playerSize / 2,
+          playerPosition.y - playerSize / 2,
+          playerPosition.z - playerSize / 2
+        ),
+        new THREE.Vector3(
+          playerPosition.x + playerSize / 2,
+          playerPosition.y + playerSize / 2,
+          playerPosition.z + playerSize / 2
+        )
+      );
+
+      this.waveManager.ammoMagazines.forEach((magazine) => {
+        if (!magazine.collected) {
+          const magazineBox = new THREE.Box3().setFromObject(magazine.model);
+          if (playerBox.intersectsBox(magazineBox)) {
+            this.ammo += 10;
+            this.ui.updateAmmo(this.ammo);
+            this.waveManager.ammoMagazines.splice(
+              this.waveManager.ammoMagazines.indexOf(magazine),
+              1
+            );
+            this.scene.remove(magazine.model);
+            magazine.collected = true;
+          }
         }
       });
     }
