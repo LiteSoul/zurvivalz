@@ -3,6 +3,7 @@ import { PointerLockControls } from "three/examples/jsm/controls/PointerLockCont
 import { Zombie } from "./Zombie.js"; // Imported for reference, used by WaveManager
 import { WaveManager } from "./WaveManager.js"; // Manages zombie spawning and updates
 import { UI } from "./UI.js"; // Handles health, score, and game over UI
+import { Bullet } from "./Bullet.js";
 
 class Game {
   constructor() {
@@ -266,19 +267,16 @@ class Game {
     this.shootSound.play();
 
     // Bullet System (Phase 2)
-    const bulletGeometry = new THREE.SphereGeometry(0.05, 8, 8);
-    const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-    const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
-
     // Calculate bullet starting position at the tip of the gun
     const gunTipPosition = new THREE.Vector3();
     this.gun.getWorldPosition(gunTipPosition);
-    bullet.position.copy(gunTipPosition);
-
     const direction = new THREE.Vector3();
     this.camera.getWorldDirection(direction);
-    bullet.velocity = direction.multiplyScalar(50); // Adjust speed as needed
-    this.scene.add(bullet);
+    const bullet = new Bullet(
+      this.scene,
+      gunTipPosition,
+      direction.multiplyScalar(50)
+    );
     this.bullets.push(bullet);
 
     // Muzzle flash (Phase 2)
@@ -332,36 +330,20 @@ class Game {
 
     //Bullet system update
     if (this.bullets) {
-      this.bullets.forEach((bullet) => {
-        bullet.position.add(bullet.velocity.clone().multiplyScalar(delta));
-
-        // Check for collisions with zombies
-        if (this.waveManager && this.waveManager.zombies) {
-          const zombieCollisions = this.waveManager.zombies.filter((zombie) => {
-            const distance = bullet.position.distanceTo(zombie.model.position);
-            return distance < 0.5; // Adjust collision distance as needed
-          });
-
-          zombieCollisions.forEach((zombie) => {
-            if (zombie.takeDamage(20)) {
-              this.waveManager.zombies = this.waveManager.zombies.filter(
-                (z) => z !== zombie
-              );
-              this.scene.remove(zombie.model);
-              this.score += 10;
-              this.ui.updateScore(this.score);
-            }
-            this.scene.remove(bullet);
-            this.bullets.splice(this.bullets.indexOf(bullet), 1);
-          });
+      for (let i = this.bullets.length - 1; i >= 0; i--) {
+        const bullet = this.bullets[i];
+        if (bullet.update(delta)) {
+          // Remove the bullet if update returns true (lifetime exceeded)
+          this.scene.remove(bullet.model);
+          this.bullets.splice(i, 1);
+        } else {
+          // Check for collisions only if the bullet is still active
+          if (bullet.checkCollision(this.waveManager.zombies, this)) {
+            this.scene.remove(bullet.model);
+            this.bullets.splice(i, 1);
+          }
         }
-
-        // Remove bullet if it travels too far
-        if (bullet.position.length() > 100) {
-          this.scene.remove(bullet);
-          this.bullets.splice(this.bullets.indexOf(bullet), 1);
-        }
-      });
+      }
     }
 
     // Ammo collection
