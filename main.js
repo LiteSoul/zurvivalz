@@ -53,9 +53,12 @@ class Game {
     this.isStarted = false;
     this.isPaused = false;
 
+    // Ammo System
+    this.ammo = 20;
+
     // WaveManager and UI initialization (Phases 4, 5)
     this.waveManager = new WaveManager(this.scene, this.camera, this);
-    this.ui = new UI();
+    this.ui = new UI(this); // Pass the Game instance to UI
 
     // Environment and objects (Phase 2)
     this.setupEnvironment();
@@ -245,8 +248,16 @@ class Game {
 
   // Shooting with zombie damage (Phases 2 and 4)
   shoot() {
-    if (!this.controls.isLocked || !this.canShoot || this.isGameOver) return;
+    if (
+      !this.controls.isLocked ||
+      !this.canShoot ||
+      this.isGameOver ||
+      this.ammo <= 0
+    )
+      return;
 
+    this.ammo--;
+    this.ui.updateAmmo(this.ammo);
     this.canShoot = false;
     setTimeout(() => (this.canShoot = true), this.shootCooldown * 1000);
 
@@ -354,6 +365,7 @@ class Game {
     // Update UI with health and score (Phase 5)
     this.ui.updateHealth(this.health);
     this.ui.updateScore(this.score);
+    this.ui.updateAmmo(this.ammo);
 
     // Check for game over (Phase 5)
     if (this.health <= 0 && !this.isGameOver) {
