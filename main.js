@@ -57,13 +57,19 @@ class Game {
     // Ammo System
     this.ammo = 20;
 
-    // WaveManager and UI initialization (Phases 4, 5)
-    this.waveManager = new WaveManager(this.scene, this.camera, this);
-    this.ui = new UI(this); // Pass the Game instance to UI
-
     // Environment and objects (Phase 2)
     this.setupEnvironment();
-    this.addTestObjects();
+    this.obstacles = []; // Initialize the obstacles array
+    this.addTestObjects(); // Create obstacles and add to the scene and array
+
+    // WaveManager and UI initialization (Phases 4, 5)
+    this.waveManager = new WaveManager(
+      this.scene,
+      this.camera,
+      this,
+      this.obstacles
+    );
+    this.ui = new UI(this); // Pass the Game instance to UI
 
     // Audio for shooting (Phase 2)
     this.setupAudio();
@@ -109,17 +115,35 @@ class Game {
   // Test objects (Phase 2)
   addTestObjects() {
     const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const cubeMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-    const positions = [
-      [0, 0.5, 0],
-      [5, 0.5, 0],
-      [0, 0.5, 5],
-      [-5, 0.5, -5],
+    // const cubeMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+    // const positions = [
+    //   [0, 0.5, 0],
+    //   [5, 0.5, 0],
+    //   [0, 0.5, 5],
+    //   [-5, 0.5, -5],
+    // ];
+    // positions.forEach((pos) => {
+    //   const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    //   cube.position.set(pos[0], pos[1], pos[2]);
+    //   this.scene.add(cube);
+    // });
+    // Obstacles
+    const obstacleGeometry = new THREE.BoxGeometry(2, 2, 2);
+    const obstacleMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 }); // Brown color
+    const obstaclePositions = [
+      [10, 1, 5],
+      [-5, 1, -10],
+      [0, 1, 15],
+      [15, 1, -5],
+      [-10, 1, 8],
+      [3, 1, -12],
     ];
-    positions.forEach((pos) => {
-      const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-      cube.position.set(pos[0], pos[1], pos[2]);
-      this.scene.add(cube);
+
+    obstaclePositions.forEach((pos) => {
+      const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+      obstacle.position.set(pos[0], pos[1], pos[2]);
+      this.scene.add(obstacle);
+      this.obstacles.push(obstacle);
     });
   }
 

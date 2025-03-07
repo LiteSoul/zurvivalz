@@ -1,16 +1,20 @@
 // Zombie.js
 import * as THREE from "three";
+import { Pathfinder } from "./Pathfinder.js";
 
 export class Zombie {
-  constructor(scene, player, game) {
+  constructor(scene, player, game, obstacles) {
     this.scene = scene;
     this.player = player;
     this.game = game;
+    this.obstacles = obstacles;
     this.health = 100;
     this.speed = 2 + Math.random(); // Slight speed variation
     this.model = this.createModel();
     this.scene.add(this.model);
     this.collided = false; // Flag to prevent continuous damage
+    this.pathUpdateInterval = 20; // Update path every 20 frames
+    this.pathUpdateCounter = 0;
   }
 
   createModel() {
@@ -30,10 +34,25 @@ export class Zombie {
   }
 
   update(delta) {
-    // Move toward player
-    const direction = new THREE.Vector3();
-    direction.subVectors(this.player.position, this.model.position).normalize();
-    this.model.position.addScaledVector(direction, this.speed * delta);
+    // Only update if counter reaches interval
+    this.pathUpdateCounter += 1;
+    if (this.pathUpdateCounter >= this.pathUpdateInterval) {
+      this.pathUpdateCounter = 0;
+      const pathfinder = new Pathfinder(
+        this.scene,
+        this.model.position,
+        this.player.position,
+        this.obstacles
+      );
+      const path = pathfinder.findPath();
+
+      if (path.length > 1) {
+        const nextPoint = path[1]; // 0 is current position, 1 is the next
+        const direction = new THREE.Vector3();
+        direction.subVectors(nextPoint, this.model.position).normalize();
+        this.model.position.addScaledVector(direction, this.speed * delta);
+      }
+    }
 
     // Bounding box collision detection
     const playerPosition = this.player.position;

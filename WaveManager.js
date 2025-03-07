@@ -4,10 +4,11 @@ import { AmmoMagazine } from "./AmmoMagazine.js";
 import * as THREE from "three";
 
 export class WaveManager {
-  constructor(scene, playerCamera, game) {
+  constructor(scene, playerCamera, game, obstacles) {
     this.scene = scene;
     this.playerCamera = playerCamera;
     this.game = game; // Reference to Game instance for health access
+    this.obstacles = obstacles;
     this.wave = 0;
     this.zombies = [];
     this.spawnInterval = 10000; // New wave every 10 seconds
@@ -25,7 +26,12 @@ export class WaveManager {
     this.wave++;
     const zombieCount = this.wave * 3; // Increasing difficulty
     for (let i = 0; i < zombieCount; i++) {
-      const zombie = new Zombie(this.scene, this.playerCamera, this.game);
+      const zombie = new Zombie(
+        this.scene,
+        this.playerCamera,
+        this.game,
+        this.obstacles
+      );
       this.zombies.push(zombie);
     }
   }
