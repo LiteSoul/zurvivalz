@@ -6,7 +6,7 @@ export class Zombie {
     this.scene = scene;
     this.player = player;
     this.game = game;
-    this.health = 100;
+    this.health = 40;
     this.speed = 2 + Math.random(); // Slight speed variation
     this.model = this.createModel();
     this.scene.add(this.model);
