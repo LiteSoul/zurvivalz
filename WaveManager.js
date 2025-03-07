@@ -1,7 +1,11 @@
 // WaveManager.js
-import { Zombie } from "./Zombie.js";
 import { AmmoMagazine } from "./AmmoMagazine.js";
 import * as THREE from "three";
+import ZombieWalker from "./zombies/ZombieWalker.js";
+import ZombieRunner from "./zombies/ZombieRunner.js";
+import ZombieTank from "./zombies/ZombieTank.js";
+import ZombieJumper from "./zombies/ZombieJumper.js";
+import ZombieSpitter from "./zombies/ZombieSpitter.js";
 
 export class WaveManager {
   constructor(scene, playerCamera, game) {
@@ -24,8 +28,17 @@ export class WaveManager {
   spawnWave() {
     this.wave++;
     const zombieCount = this.wave * 3; // Increasing difficulty
+    const zombieTypes = [
+      ZombieWalker,
+      ZombieRunner,
+      ZombieTank,
+      ZombieJumper,
+      ZombieSpitter,
+    ];
     for (let i = 0; i < zombieCount; i++) {
-      const zombie = new Zombie(this.scene, this.playerCamera, this.game);
+      const randomIndex = Math.floor(Math.random() * zombieTypes.length);
+      const ZombieClass = zombieTypes[randomIndex];
+      const zombie = new ZombieClass(this.scene, this.playerCamera, this.game);
       this.zombies.push(zombie);
     }
   }
@@ -52,6 +65,13 @@ export class WaveManager {
     if (Date.now() > this.nextAmmoSpawnTime) {
       this.spawnAmmo();
       this.nextAmmoSpawnTime = Date.now() + this.spawnAmmoInterval;
+    }
+
+    // Remove dead zombies from the array
+    for (let i = this.zombies.length - 1; i >= 0; i--) {
+      if (this.zombies[i].health <= 0) {
+        this.zombies.splice(i, 1);
+      }
     }
   }
 }

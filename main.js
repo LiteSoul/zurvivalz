@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
-import { Zombie } from "./Zombie.js"; // Imported for reference, used by WaveManager
 import { WaveManager } from "./WaveManager.js"; // Manages zombie spawning and updates
 import { UI } from "./UI.js"; // Handles health, score, and game over UI
 import { Bullet } from "./Bullet.js";
@@ -88,7 +87,7 @@ class Game {
   setupEnvironment() {
     this.scene.background = new THREE.Color(0x87ceeb);
     const textureLoader = new THREE.TextureLoader();
-    const groundTexture = textureLoader.load("/ground.jpg");
+    const groundTexture = textureLoader.load("images/ground.jpg");
     groundTexture.wrapS = THREE.RepeatWrapping;
     groundTexture.wrapT = THREE.RepeatWrapping;
     groundTexture.repeat.set(100, 100);
