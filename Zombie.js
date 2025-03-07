@@ -14,19 +14,28 @@ export class Zombie {
   }
 
   createModel() {
-    // Simple green cube as zombie model
-    const geometry = new THREE.BoxGeometry(1, 2, 1);
-    const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
-    const zombie = new THREE.Mesh(geometry, material);
+    // Load the zombie sprite texture
+    const textureLoader = new THREE.TextureLoader();
+    const texture = textureLoader.load("/zombie.png");
+
+    // Create the sprite material
+    const material = new THREE.SpriteMaterial({ map: texture });
+
+    // Create the sprite
+    const sprite = new THREE.Sprite(material);
+
+    // Scale the sprite (adjust as needed)
+    sprite.scale.set(0.01 * 128, 0.01 * 168, 1);
+
     // Spawn randomly within 50 units of player
     const angle = Math.random() * Math.PI * 2;
     const radius = 20 + Math.random() * 30;
-    zombie.position.set(
+    sprite.position.set(
       this.player.position.x + Math.cos(angle) * radius,
-      1, // Center height
+      0.84, // Center height to align with ground:  y = 1.68 / 2 = 0.84.
       this.player.position.z + Math.sin(angle) * radius
     );
-    return zombie;
+    return sprite;
   }
 
   update(delta) {
@@ -35,29 +44,16 @@ export class Zombie {
     direction.subVectors(this.player.position, this.model.position).normalize();
     this.model.position.addScaledVector(direction, this.speed * delta);
 
-    // Bounding box collision detection
-    const playerPosition = this.player.position;
-    const playerSize = 1; // Approximate player size
-    const playerBox = new THREE.Box3(
-      new THREE.Vector3(
-        playerPosition.x - playerSize / 2,
-        playerPosition.y - playerSize / 2,
-        playerPosition.z - playerSize / 2
-      ),
-      new THREE.Vector3(
-        playerPosition.x + playerSize / 2,
-        playerPosition.y + playerSize / 2,
-        playerPosition.z + playerSize / 2
-      )
-    );
-    const zombieBox = new THREE.Box3().setFromObject(this.model);
-    if (playerBox.intersectsBox(zombieBox)) {
+    // Simplified collision detection (distance-based)
+    const distance = this.model.position.distanceTo(this.player.position);
+    if (distance < 1) {
+      // Adjust collision distance as needed
       if (!this.collided) {
-        this.game.health -= 10; // Reduce health on collision
-        this.collided = true; // Set flag
+        this.game.health -= 10;
+        this.collided = true;
       }
     } else {
-      this.collided = false; // Reset flag when no longer colliding
+      this.collided = false;
     }
   }
 
