@@ -27,14 +27,14 @@ export default class Zombie {
     const sprite = new THREE.Sprite(material);
 
     // Scale the sprite
-    sprite.scale.set(this.size * 0.01 * 128, this.size * 0.01 * 168, 1);
+    sprite.scale.set(this.size * 0.02 * 128, this.size * 0.02 * 168, 1);
 
     // Spawn randomly within 50 units of player
     const angle = Math.random() * Math.PI * 2;
     const radius = 20 + Math.random() * 30;
     sprite.position.set(
       this.player.position.x + Math.cos(angle) * radius,
-      this.size * 0.84, // Adjusted vertical position based on size
+      this.size * 0.84 * 2, // Adjusted vertical position based on size. y = 1.68 / 2 = 0.84
       this.player.position.z + Math.sin(angle) * radius
     );
     return sprite;

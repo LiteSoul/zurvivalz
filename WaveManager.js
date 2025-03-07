@@ -27,7 +27,7 @@ export class WaveManager {
 
   spawnWave() {
     this.wave++;
-    const zombieCount = this.wave * 3; // Increasing difficulty
+    const zombieCount = this.wave * 3; // Increasing difficulty, wave 1 = 3, wave 2 = 6...
     const zombieTypes = [
       ZombieWalker,
       ZombieRunner,
