@@ -14,6 +14,12 @@ export class Zombie {
     this.model = this.createModel();
     this.scene.add(this.model);
     this.collided = false; // Flag to prevent continuous damage
+    this.pathfinder = new Pathfinder(
+      this.scene,
+      this.model.position,
+      this.player.position,
+      this.grid
+    );
   }
 
   createModel() {
@@ -33,16 +39,11 @@ export class Zombie {
   }
 
   update(delta) {
-    const pathfinder = new Pathfinder(
-      this.scene,
-      this.model.position,
-      this.player.position,
-      this.grid // Pass the grid to Pathfinder
-    );
-
-    // if (path.length > 1) {
-    if (pathfinder.findPath() > 1) {
-      const nextPoint = path[1]; // 0 is current position, 1 is the next
+    this.pathfinder.setStart(this.model.position);
+    this.pathfinder.setEnd(this.player.position);
+    const path = this.pathfinder.findPath();
+    if (path.length > 1) {
+      const nextPoint = path[1];
       const direction = new THREE.Vector3();
       direction.subVectors(nextPoint, this.model.position).normalize();
       this.model.position.addScaledVector(direction, this.speed * delta);

@@ -9,6 +9,14 @@ export class Pathfinder {
     this.gridSize = 1;
   }
 
+  setStart(start) {
+    this.start = start.clone();
+  }
+
+  setEnd(end) {
+    this.end = end.clone();
+  }
+
   // No createGrid() method needed anymore
 
   isWalkable(x, z) {
