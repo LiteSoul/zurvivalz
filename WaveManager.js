@@ -20,6 +20,43 @@ export class WaveManager {
     this.spawnAmmoInterval = 15000; // Spawn ammo every 15 seconds
     this.nextAmmoSpawnTime = Date.now() + this.spawnAmmoInterval;
     this.spawnAmmo(); // Initial ammo spawn
+    this.grid = this.createGrid();
+  }
+
+  createGrid() {
+    const grid = [];
+    // For simplicity, we'll assume a fixed-size grid for now.  We can make this dynamic later.
+    const minX = -50;
+    const maxX = 50;
+    const minZ = -50;
+    const maxZ = 50;
+    const gridSize = 1;
+
+    for (let x = minX; x < maxX; x += gridSize) {
+      for (let z = minZ; z < maxZ; z += gridSize) {
+        const cell = {
+          x: Math.round(x / gridSize),
+          z: Math.round(z / gridSize),
+          walkable: true,
+        };
+
+        // Check if this cell is occupied by an obstacle
+        for (const obstacle of this.obstacles) {
+          const obstacleBox = new THREE.Box3().setFromObject(obstacle);
+          const cellBox = new THREE.Box3(
+            new THREE.Vector3(x, 0, z),
+            new THREE.Vector3(x + gridSize, 2, z + gridSize)
+          ); // Assuming obstacles are on y=0 and have some height.
+
+          if (obstacleBox.intersectsBox(cellBox)) {
+            cell.walkable = false;
+            break; // No need to check other obstacles if this cell is occupied
+          }
+        }
+        grid.push(cell);
+      }
+    }
+    return grid;
   }
 
   spawnWave() {
