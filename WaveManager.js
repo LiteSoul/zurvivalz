@@ -8,7 +8,10 @@ export class WaveManager {
     this.scene = scene;
     this.playerCamera = playerCamera;
     this.game = game; // Reference to Game instance for health access
-    this.obstacles = obstacles;
+    this.obstacles = obstacles; // Store the obstacles
+
+    this.grid = this.createGrid(); // Create the grid ONCE
+
     this.wave = 0;
     this.zombies = [];
     this.spawnInterval = 10000; // New wave every 10 seconds
@@ -20,7 +23,6 @@ export class WaveManager {
     this.spawnAmmoInterval = 15000; // Spawn ammo every 15 seconds
     this.nextAmmoSpawnTime = Date.now() + this.spawnAmmoInterval;
     this.spawnAmmo(); // Initial ammo spawn
-    this.grid = this.createGrid();
   }
 
   createGrid() {
@@ -63,11 +65,12 @@ export class WaveManager {
     this.wave++;
     const zombieCount = this.wave * 3; // Increasing difficulty
     for (let i = 0; i < zombieCount; i++) {
+      // Pass the GRID to the Zombie constructor
       const zombie = new Zombie(
         this.scene,
         this.playerCamera,
         this.game,
-        this.obstacles
+        this.grid
       );
       this.zombies.push(zombie);
     }

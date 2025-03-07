@@ -63,20 +63,13 @@ class Game {
     this.addTestObjects(); // Create obstacles and add to the scene and array
 
     // WaveManager and UI initialization (Phases 4, 5)
-    this.ammo = 20;
-
-    // Environment and objects (Phase 2)
-    this.setupEnvironment();
-    this.obstacles = []; // Initialize the obstacles array
-    this.addTestObjects(); // Create obstacles and add to the scene and array
-
-    // WaveManager and UI initialization (Phases 4, 5)
     this.waveManager = new WaveManager(
       this.scene,
       this.camera,
       this,
       this.obstacles
     );
+
     this.ui = new UI(this); // Pass the Game instance to UI
 
     // Audio for shooting (Phase 2)

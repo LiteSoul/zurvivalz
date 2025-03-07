@@ -1,58 +1,19 @@
 import * as THREE from "three";
 
 export class Pathfinder {
-  constructor(scene, start, end, obstacles) {
+  constructor(scene, start, end, grid) {
     this.scene = scene;
     this.start = start.clone();
     this.end = end.clone();
-    this.obstacles = obstacles; // Array of THREE.Box3 representing obstacles
-    this.gridSize = 1; // Size of each grid cell
-    this.grid = this.createGrid(); // The grid will be created dynamically
+    this.grid = grid; // Receive the grid
+    this.gridSize = 1;
   }
 
-  createGrid() {
-    // console.log(
-    //   "Obstacles in Pathfinder:",
-    //   this.obstacles,
-    //   typeof this.obstacles
-    // );
-    const grid = [];
-    // For simplicity, we'll assume a fixed-size grid for now.  We can make this dynamic later.
-    const minX = -50;
-    const maxX = 50;
-    const minZ = -50;
-    const maxZ = 50;
-
-    for (let x = minX; x < maxX; x += this.gridSize) {
-      for (let z = minZ; z < maxZ; z += this.gridSize) {
-        const cell = {
-          x: Math.round(x / this.gridSize),
-          z: Math.round(z / this.gridSize),
-          walkable: true,
-        };
-
-        // Check if this cell is occupied by an obstacle
-        for (const obstacle of this.obstacles) {
-          const obstacleBox = new THREE.Box3().setFromObject(obstacle);
-          const cellBox = new THREE.Box3(
-            new THREE.Vector3(x, 0, z),
-            new THREE.Vector3(x + this.gridSize, 2, z + this.gridSize)
-          ); // Assuming obstacles are on y=0 and have some height.
-
-          if (obstacleBox.intersectsBox(cellBox)) {
-            cell.walkable = false;
-            break; // No need to check other obstacles if this cell is occupied
-          }
-        }
-        grid.push(cell);
-      }
-    }
-    return grid;
-  }
+  // No createGrid() method needed anymore
 
   isWalkable(x, z) {
     const cell = this.grid.find((c) => c.x === x && c.z === z);
-    return cell ? cell.walkable : false; // Return false if cell is outside grid
+    return cell ? cell.walkable : false; // Return false if cell is outside the grid or not walkable.
   }
 
   findPath() {
@@ -138,7 +99,7 @@ export class Pathfinder {
   getNeighbors(node) {
     const neighbors = [];
     const { x, z } = node;
-    // Check adjacent cells (up, down, left, right)
+    //  Check adjacent cells (up, down, left, right)
 
     if (this.isWalkable(x + 1, z)) neighbors.push({ x: x + 1, z: z });
     if (this.isWalkable(x - 1, z)) neighbors.push({ x: x - 1, z: z });

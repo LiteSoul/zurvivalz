@@ -3,18 +3,17 @@ import * as THREE from "three";
 import { Pathfinder } from "./Pathfinder.js";
 
 export class Zombie {
-  constructor(scene, player, game, obstacles) {
+  constructor(scene, player, game, grid) {
+    // Receive the grid
     this.scene = scene;
     this.player = player;
     this.game = game;
-    this.obstacles = obstacles;
+    this.grid = grid; // Store the grid
     this.health = 100;
     this.speed = 2 + Math.random(); // Slight speed variation
     this.model = this.createModel();
     this.scene.add(this.model);
     this.collided = false; // Flag to prevent continuous damage
-    this.pathUpdateInterval = 20; // Update path every 20 frames
-    this.pathUpdateCounter = 0;
   }
 
   createModel() {
@@ -34,24 +33,19 @@ export class Zombie {
   }
 
   update(delta) {
-    // Only update if counter reaches interval
-    this.pathUpdateCounter += 1;
-    if (this.pathUpdateCounter >= this.pathUpdateInterval) {
-      this.pathUpdateCounter = 0;
-      const pathfinder = new Pathfinder(
-        this.scene,
-        this.model.position,
-        this.player.position,
-        this.obstacles
-      );
-      const path = pathfinder.findPath();
+    const pathfinder = new Pathfinder(
+      this.scene,
+      this.model.position,
+      this.player.position,
+      this.grid // Pass the grid to Pathfinder
+    );
 
-      if (path.length > 1) {
-        const nextPoint = path[1]; // 0 is current position, 1 is the next
-        const direction = new THREE.Vector3();
-        direction.subVectors(nextPoint, this.model.position).normalize();
-        this.model.position.addScaledVector(direction, this.speed * delta);
-      }
+    // if (path.length > 1) {
+    if (pathfinder.findPath() > 1) {
+      const nextPoint = path[1]; // 0 is current position, 1 is the next
+      const direction = new THREE.Vector3();
+      direction.subVectors(nextPoint, this.model.position).normalize();
+      this.model.position.addScaledVector(direction, this.speed * delta);
     }
 
     // Bounding box collision detection
