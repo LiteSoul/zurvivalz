@@ -1,5 +1,8 @@
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { WaveManager } from "./WaveManager.js"; // Manages zombie spawning and updates
 import { UI } from "./UI.js"; // Handles health, score, and game over UI
 import { Bullet } from "./Bullet.js";
@@ -291,40 +294,73 @@ class Game {
       }
 
       // Draw a line to represent the shot
-      const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+      const material = new LineMaterial({ color: 0xffff00, linewidth: 2 }); // Yellow, thicker line. Use linewidth in world units
       const points = [];
-      points.push(this.gun.getWorldPosition(new THREE.Vector3()));
-      points.push(intersects[0].point); // Hit position
+      const startPoint = this.gun.getWorldPosition(new THREE.Vector3());
+      const endPoint = intersects[0].point.clone(); // Clone to avoid modifying the original
+      points.push(startPoint.x, startPoint.y, startPoint.z);
+      points.push(endPoint.x, endPoint.y, endPoint.z); // Start at the correct end point
 
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(geometry, material);
+      const geometry = new LineGeometry();
+      geometry.setPositions(points);
+      const line = new Line2(geometry, material);
       this.scene.add(line);
 
-      // Remove the line after a short delay
-      setTimeout(() => {
-        this.scene.remove(line);
-      }, 50); // Adjust delay as needed
+      // Animate the line's opacity
+      const startTime = Date.now();
+      const duration = 100; // Animation duration in milliseconds
+      const animateShot = () => {
+        const elapsed = Date.now() - startTime;
+        const fraction = Math.min(elapsed / duration, 1); // Clamp to 1
+
+        // Fade out the line
+        material.opacity = 1 - fraction;
+        material.transparent = true; // Need this for opacity to work
+        material.needsUpdate = true;
+
+        if (fraction < 1) {
+          requestAnimationFrame(animateShot);
+        } else {
+          this.scene.remove(line); // Remove the line when animation is complete
+        }
+      };
+      animateShot();
     } else {
-      // If no intersection, draw a line to a reasonable distance
-      const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+      // If no intersection, draw a line to a reasonable distance and animate
+      const material = new LineMaterial({ color: 0xffff00, linewidth: 2 }); // Yellow, thicker line
       const points = [];
-      points.push(this.gun.getWorldPosition(new THREE.Vector3()));
+      const startPoint = this.gun.getWorldPosition(new THREE.Vector3());
       const direction = new THREE.Vector3();
       this.camera.getWorldDirection(direction);
-      points.push(
-        this.gun
-          .getWorldPosition(new THREE.Vector3())
-          .add(direction.multiplyScalar(50))
-      ); // Extend 50 units
+      const endPoint = startPoint.clone().add(direction.multiplyScalar(50)); // Extend 50 units
+      points.push(startPoint.x, startPoint.y, startPoint.z);
+      points.push(endPoint.x, endPoint.y, endPoint.z);
 
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(geometry, material);
+      const geometry = new LineGeometry();
+      geometry.setPositions(points);
+
+      const line = new Line2(geometry, material);
       this.scene.add(line);
 
-      // Remove the line after a short delay
-      setTimeout(() => {
-        this.scene.remove(line);
-      }, 50); // Adjust delay as needed
+      // Animate the line's  opacity
+      const startTime = Date.now();
+      const duration = 100; // Animation duration in milliseconds
+
+      const animateShot = () => {
+        const elapsed = Date.now() - startTime;
+        const fraction = Math.min(elapsed / duration, 1);
+
+        material.opacity = 1 - fraction;
+        material.transparent = true;
+        material.needsUpdate = true;
+
+        if (fraction < 1) {
+          requestAnimationFrame(animateShot);
+        } else {
+          this.scene.remove(line);
+        }
+      };
+      animateShot();
     }
 
     // Muzzle flash
