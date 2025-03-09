@@ -70,6 +70,9 @@ class Game {
     // Crosshair (Phase 2)
     this.setupCrosshair();
 
+    // Raycaster for crosshair color change
+    this.crosshairRaycaster = new THREE.Raycaster();
+
     // Gun Model (Phase 2)
     this.setupGunModel();
 
@@ -137,6 +140,7 @@ class Game {
   // Crosshair (Phase 2)
   setupCrosshair() {
     const crosshair = document.createElement("div");
+    crosshair.id = "crosshair"; // Add an ID
     crosshair.style.position = "absolute";
     crosshair.style.top = "50%";
     crosshair.style.left = "50%";
@@ -410,6 +414,23 @@ class Game {
     this.ui.updateHealth(this.health);
     this.ui.updateScore(this.score);
     this.ui.updateAmmo(this.ammo);
+
+    // Raycast for crosshair color change
+    const crosshairDirection = new THREE.Vector3();
+    this.camera.getWorldDirection(crosshairDirection);
+    this.crosshairRaycaster.set(this.camera.position, crosshairDirection);
+    this.crosshairRaycaster.camera = this.camera;
+
+    const crosshairIntersects = this.crosshairRaycaster.intersectObjects(
+      this.waveManager.zombies.map((zombie) => zombie.model),
+      true
+    );
+    const crosshair = document.getElementById("crosshair"); // Get the crosshair element by ID
+    if (crosshairIntersects.length > 0) {
+      crosshair.style.backgroundColor = "red";
+    } else {
+      crosshair.style.backgroundColor = "green";
+    }
 
     // Check for game over (Phase 5)
     if (this.health <= 0 && !this.isGameOver) {
