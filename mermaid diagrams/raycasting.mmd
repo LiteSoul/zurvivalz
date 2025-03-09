@@ -1,0 +1,13 @@
+graph LR
+    A[Camera] --> B(Ray)
+    B --> C{Zombie}
+    B --> D[Far Plane]
+    
+    subgraph main.js
+    E[shoot] --> F[Create Raycaster]
+    F --> G[Set Ray Origin/Direction]
+    G --> H[intersectObjects]
+    H --> I{Hit?}
+    I -->|Yes| J[Apply Damage]
+    I -->|No| K[Miss]
+end
