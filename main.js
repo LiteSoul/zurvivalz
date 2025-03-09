@@ -140,9 +140,9 @@ class Game {
     crosshair.style.position = "absolute";
     crosshair.style.top = "50%";
     crosshair.style.left = "50%";
-    crosshair.style.width = "10px";
-    crosshair.style.height = "10px";
-    crosshair.style.backgroundColor = "white";
+    crosshair.style.width = "4px";
+    crosshair.style.height = "4px";
+    crosshair.style.backgroundColor = "red";
     crosshair.style.transform = "translate(-50%, -50%)";
     document.body.appendChild(crosshair);
   }
@@ -261,30 +261,75 @@ class Game {
     this.canShoot = false;
     setTimeout(() => (this.canShoot = true), this.shootCooldown * 1000);
 
-    // Play shooting sound (Phase 2)
+    // Play shooting sound
     if (this.shootSound.isPlaying) this.shootSound.stop();
     this.shootSound.play();
 
-    // Bullet System (Phase 2)
-    // Calculate bullet starting position at the tip of the gun
-    const gunTipPosition = new THREE.Vector3();
-    this.gun.getWorldPosition(gunTipPosition);
+    // Raycasting for hit detection
+    const raycaster = new THREE.Raycaster();
     const direction = new THREE.Vector3();
     this.camera.getWorldDirection(direction);
-    const bullet = new Bullet(
-      this.scene,
-      gunTipPosition,
-      direction.multiplyScalar(50)
-    );
-    this.bullets.push(bullet);
+    raycaster.set(this.camera.position, direction);
+    raycaster.camera = this.camera; // Set the camera property for sprite raycasting
 
-    // Muzzle flash (Phase 2)
+    const intersects = raycaster.intersectObjects(
+      this.waveManager.zombies.map((zombie) => zombie.model),
+      true
+    ); // Check for intersections with zombie models.
+
+    if (intersects.length > 0) {
+      const intersectedZombie = this.waveManager.zombies.find(
+        (zombie) => zombie.model.uuid === intersects[0].object.uuid
+      );
+
+      if (intersectedZombie) {
+        intersectedZombie.takeDamage(25); // Adjust damage to 25
+      }
+
+      // Draw a line to represent the shot
+      const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+      const points = [];
+      points.push(this.gun.getWorldPosition(new THREE.Vector3()));
+      points.push(intersects[0].point); // Hit position
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const line = new THREE.Line(geometry, material);
+      this.scene.add(line);
+
+      // Remove the line after a short delay
+      setTimeout(() => {
+        this.scene.remove(line);
+      }, 50); // Adjust delay as needed
+    } else {
+      // If no intersection, draw a line to a reasonable distance
+      const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+      const points = [];
+      points.push(this.gun.getWorldPosition(new THREE.Vector3()));
+      const direction = new THREE.Vector3();
+      this.camera.getWorldDirection(direction);
+      points.push(
+        this.gun
+          .getWorldPosition(new THREE.Vector3())
+          .add(direction.multiplyScalar(50))
+      ); // Extend 50 units
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const line = new THREE.Line(geometry, material);
+      this.scene.add(line);
+
+      // Remove the line after a short delay
+      setTimeout(() => {
+        this.scene.remove(line);
+      }, 50); // Adjust delay as needed
+    }
+
+    // Muzzle flash
     const flash = new THREE.PointLight(0xffffff, 1, 50);
     flash.position.set(0, 0, -1);
     this.camera.add(flash);
     setTimeout(() => this.camera.remove(flash), 50);
 
-    // Shooting animation (Phase 2)
+    // Shooting animation
     const originalGunPosition = this.gun.position.clone();
     const recoilDistance = 0.1;
     this.gun.position.z += recoilDistance;
@@ -326,24 +371,6 @@ class Game {
 
     // Update WaveManager for zombie spawning and movement (Phases 3, 4)
     this.waveManager.update(delta);
-
-    //Bullet system update
-    if (this.bullets) {
-      for (let i = this.bullets.length - 1; i >= 0; i--) {
-        const bullet = this.bullets[i];
-        if (bullet.update(delta)) {
-          // Remove the bullet if update returns true (lifetime exceeded)
-          this.scene.remove(bullet.model);
-          this.bullets.splice(i, 1);
-        } else {
-          // Check for collisions only if the bullet is still active
-          if (bullet.checkCollision(this.waveManager.zombies, this)) {
-            this.scene.remove(bullet.model);
-            this.bullets.splice(i, 1);
-          }
-        }
-      }
-    }
 
     // Ammo collection
     if (this.waveManager && this.waveManager.ammoMagazines) {

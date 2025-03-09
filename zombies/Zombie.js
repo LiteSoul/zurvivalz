@@ -2,10 +2,20 @@
 import * as THREE from "three";
 
 export default class Zombie {
-  constructor(scene, player, game, health, speed, size, spritePath) {
+  constructor(
+    scene,
+    player,
+    game,
+    health,
+    speed,
+    size,
+    spritePath,
+    scoreValue
+  ) {
     this.scene = scene;
     this.player = player;
     this.game = game;
+    this.scoreValue = scoreValue;
     this.health = health;
     this.speed = speed;
     this.size = size;
@@ -63,6 +73,7 @@ export default class Zombie {
     this.health -= amount;
     if (this.health <= 0) {
       this.scene.remove(this.model);
+      this.game.score += this.scoreValue; // Increment score on zombie death.
       return true; // Indicate zombie is dead
     }
     return false;
