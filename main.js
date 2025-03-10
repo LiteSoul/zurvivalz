@@ -1,8 +1,11 @@
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
-import { Zombie } from "./Zombie.js"; // Imported for reference, used by WaveManager
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { WaveManager } from "./WaveManager.js"; // Manages zombie spawning and updates
 import { UI } from "./UI.js"; // Handles health, score, and game over UI
+import { Bullet } from "./Bullet.js";
 
 class Game {
   constructor() {
@@ -53,9 +56,12 @@ class Game {
     this.isStarted = false;
     this.isPaused = false;
 
+    // Ammo System
+    this.ammo = 20;
+
     // WaveManager and UI initialization (Phases 4, 5)
-    this.waveManager = new WaveManager(this.scene, this.controls.object, this);
-    this.ui = new UI();
+    this.waveManager = new WaveManager(this.scene, this.camera, this);
+    this.ui = new UI(this); // Pass the Game instance to UI
 
     // Environment and objects (Phase 2)
     this.setupEnvironment();
@@ -67,18 +73,27 @@ class Game {
     // Crosshair (Phase 2)
     this.setupCrosshair();
 
+    // Raycaster for crosshair color change
+    this.crosshairRaycaster = new THREE.Raycaster();
+
+    // Gun Model (Phase 2)
+    this.setupGunModel();
+
     // Event listeners (Phase 2)
     this.setupEventListeners();
 
     // Start game loop
     this.animate();
+
+    // Bullets array (Phase 2)
+    this.bullets = [];
   }
 
   // Environment setup (Phase 2)
   setupEnvironment() {
     this.scene.background = new THREE.Color(0x87ceeb);
     const textureLoader = new THREE.TextureLoader();
-    const groundTexture = textureLoader.load("/ground.jpg");
+    const groundTexture = textureLoader.load("images/ground.jpg");
     groundTexture.wrapS = THREE.RepeatWrapping;
     groundTexture.wrapT = THREE.RepeatWrapping;
     groundTexture.repeat.set(100, 100);
@@ -128,12 +143,13 @@ class Game {
   // Crosshair (Phase 2)
   setupCrosshair() {
     const crosshair = document.createElement("div");
+    crosshair.id = "crosshair"; // Add an ID
     crosshair.style.position = "absolute";
     crosshair.style.top = "50%";
     crosshair.style.left = "50%";
-    crosshair.style.width = "10px";
-    crosshair.style.height = "10px";
-    crosshair.style.backgroundColor = "white";
+    crosshair.style.width = "4px";
+    crosshair.style.height = "4px";
+    crosshair.style.backgroundColor = "red";
     crosshair.style.transform = "translate(-50%, -50%)";
     document.body.appendChild(crosshair);
   }
@@ -239,41 +255,136 @@ class Game {
 
   // Shooting with zombie damage (Phases 2 and 4)
   shoot() {
-    if (!this.controls.isLocked || !this.canShoot || this.isGameOver) return;
+    if (
+      !this.controls.isLocked ||
+      !this.canShoot ||
+      this.isGameOver ||
+      this.ammo <= 0
+    )
+      return;
 
+    this.ammo--;
+    this.ui.updateAmmo(this.ammo);
     this.canShoot = false;
-    setTimeout(() => (this.canShoot = true), this.shootCooldown * 1000);
+    setTimeout(() => (this.canShoot = true), this.shootCooldown * 200);
 
-    // Play shooting sound (Phase 2)
+    // Play shooting sound
     if (this.shootSound.isPlaying) this.shootSound.stop();
     this.shootSound.play();
 
-    // Raycasting to hit zombies (Phase 4)
+    // Raycasting for hit detection
     const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
+    const direction = new THREE.Vector3();
+    this.camera.getWorldDirection(direction);
+    raycaster.set(this.camera.position, direction);
+    raycaster.camera = this.camera; // Set the camera property for sprite raycasting
+
     const intersects = raycaster.intersectObjects(
-      this.waveManager.zombies.map((z) => z.model)
-    );
+      this.waveManager.zombies.map((zombie) => zombie.model),
+      true
+    ); // Check for intersections with zombie models.
+
     if (intersects.length > 0) {
-      const zombie = this.waveManager.zombies.find(
-        (z) => z.model === intersects[0].object
+      const intersectedZombie = this.waveManager.zombies.find(
+        (zombie) => zombie.model.uuid === intersects[0].object.uuid
       );
-      if (zombie && zombie.takeDamage(20)) {
-        // Assume Zombie.js has takeDamage()
-        this.waveManager.zombies = this.waveManager.zombies.filter(
-          (z) => z !== zombie
-        );
-        this.scene.remove(zombie.model); // Remove from scene
-        this.score += 10; // Increase score
-        this.ui.updateScore(this.score); // Update UI immediately
+
+      if (intersectedZombie) {
+        intersectedZombie.takeDamage(25); // Adjust damage to 25
       }
+
+      // Draw a line to represent the shot
+      const material = new LineMaterial({ color: 0xffff00, linewidth: 2 }); // Yellow, thicker line. Use linewidth in world units
+      const points = [];
+      const startPoint = this.gun.getWorldPosition(new THREE.Vector3());
+      const endPoint = intersects[0].point.clone(); // Clone to avoid modifying the original
+      points.push(startPoint.x, startPoint.y, startPoint.z);
+      points.push(endPoint.x, endPoint.y, endPoint.z); // Start at the correct end point
+
+      const geometry = new LineGeometry();
+      geometry.setPositions(points);
+      const line = new Line2(geometry, material);
+      this.scene.add(line);
+
+      // Animate the line's opacity
+      const startTime = Date.now();
+      const duration = 100; // Animation duration in milliseconds
+      const animateShot = () => {
+        const elapsed = Date.now() - startTime;
+        const fraction = Math.min(elapsed / duration, 1); // Clamp to 1
+
+        // Fade out the line
+        material.opacity = 1 - fraction;
+        material.transparent = true; // Need this for opacity to work
+        material.needsUpdate = true;
+
+        if (fraction < 1) {
+          requestAnimationFrame(animateShot);
+        } else {
+          this.scene.remove(line); // Remove the line when animation is complete
+        }
+      };
+      animateShot();
+    } else {
+      // If no intersection, draw a line to a reasonable distance and animate
+      const material = new LineMaterial({ color: 0xffff00, linewidth: 2 }); // Yellow, thicker line
+      const points = [];
+      const startPoint = this.gun.getWorldPosition(new THREE.Vector3());
+      const direction = new THREE.Vector3();
+      this.camera.getWorldDirection(direction);
+      const endPoint = startPoint.clone().add(direction.multiplyScalar(50)); // Extend 50 units
+      points.push(startPoint.x, startPoint.y, startPoint.z);
+      points.push(endPoint.x, endPoint.y, endPoint.z);
+
+      const geometry = new LineGeometry();
+      geometry.setPositions(points);
+
+      const line = new Line2(geometry, material);
+      this.scene.add(line);
+
+      // Animate the line's  opacity
+      const startTime = Date.now();
+      const duration = 100; // Animation duration in milliseconds
+
+      const animateShot = () => {
+        const elapsed = Date.now() - startTime;
+        const fraction = Math.min(elapsed / duration, 1);
+
+        material.opacity = 1 - fraction;
+        material.transparent = true;
+        material.needsUpdate = true;
+
+        if (fraction < 1) {
+          requestAnimationFrame(animateShot);
+        } else {
+          this.scene.remove(line);
+        }
+      };
+      animateShot();
     }
 
-    // Muzzle flash (Phase 2)
+    // Muzzle flash
     const flash = new THREE.PointLight(0xffffff, 1, 50);
     flash.position.set(0, 0, -1);
     this.camera.add(flash);
     setTimeout(() => this.camera.remove(flash), 50);
+
+    // Shooting animation
+    const originalGunPosition = this.gun.position.clone();
+    const recoilDistance = 0.1;
+    this.gun.position.z += recoilDistance;
+    setTimeout(() => {
+      this.gun.position.copy(originalGunPosition);
+    }, 150);
+  }
+
+  // Gun Model Setup (Phase 2)
+  setupGunModel() {
+    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.5);
+    const material = new THREE.MeshPhongMaterial({ color: 0x808080 });
+    this.gun = new THREE.Mesh(geometry, material);
+    this.gun.position.set(0.3, -0.3, -0.5); // Position relative to camera
+    this.camera.add(this.gun); // Add as child of camera
   }
 
   // Game loop (Phases 2, 3, 4, 5)
@@ -301,9 +412,61 @@ class Game {
     // Update WaveManager for zombie spawning and movement (Phases 3, 4)
     this.waveManager.update(delta);
 
+    // Ammo collection
+    if (this.waveManager && this.waveManager.ammoMagazines) {
+      const playerPosition = this.controls.object.position;
+      const playerSize = 1; // Approximate player size
+      const playerBox = new THREE.Box3(
+        new THREE.Vector3(
+          playerPosition.x - playerSize / 2,
+          playerPosition.y - playerSize / 2,
+          playerPosition.z - playerSize / 2
+        ),
+        new THREE.Vector3(
+          playerPosition.x + playerSize / 2,
+          playerPosition.y + playerSize / 2,
+          playerPosition.z + playerSize / 2
+        )
+      );
+
+      this.waveManager.ammoMagazines.forEach((magazine) => {
+        if (!magazine.collected) {
+          const magazineBox = new THREE.Box3().setFromObject(magazine.model);
+          if (playerBox.intersectsBox(magazineBox)) {
+            this.ammo += 10;
+            this.ui.updateAmmo(this.ammo);
+            this.waveManager.ammoMagazines.splice(
+              this.waveManager.ammoMagazines.indexOf(magazine),
+              1
+            );
+            this.scene.remove(magazine.model);
+            magazine.collected = true;
+          }
+        }
+      });
+    }
+
     // Update UI with health and score (Phase 5)
     this.ui.updateHealth(this.health);
     this.ui.updateScore(this.score);
+    this.ui.updateAmmo(this.ammo);
+
+    // Raycast for crosshair color change
+    const crosshairDirection = new THREE.Vector3();
+    this.camera.getWorldDirection(crosshairDirection);
+    this.crosshairRaycaster.set(this.camera.position, crosshairDirection);
+    this.crosshairRaycaster.camera = this.camera;
+
+    const crosshairIntersects = this.crosshairRaycaster.intersectObjects(
+      this.waveManager.zombies.map((zombie) => zombie.model),
+      true
+    );
+    const crosshair = document.getElementById("crosshair"); // Get the crosshair element by ID
+    if (crosshairIntersects.length > 0) {
+      crosshair.style.backgroundColor = "red";
+    } else {
+      crosshair.style.backgroundColor = "green";
+    }
 
     // Check for game over (Phase 5)
     if (this.health <= 0 && !this.isGameOver) {

@@ -31,6 +31,15 @@ export class UI {
     this.gameOverElement.innerHTML =
       'Game Over<br><button id="restart">Restart</button>';
     document.body.appendChild(this.gameOverElement);
+
+    // Ammo display
+    this.ammoElement = document.createElement("div");
+    this.ammoElement.style.position = "absolute";
+    this.ammoElement.style.top = "40px"; // Position below health
+    this.ammoElement.style.left = "10px";
+    this.ammoElement.style.color = "white";
+    this.ammoElement.style.fontSize = "24px";
+    document.body.appendChild(this.ammoElement);
   }
 
   updateHealth(health) {
@@ -39,6 +48,10 @@ export class UI {
 
   updateScore(score) {
     this.scoreElement.innerHTML = `Score: ${score}`;
+  }
+
+  updateAmmo(ammo) {
+    this.ammoElement.innerHTML = `Ammo: ${ammo}`;
   }
 
   showGameOver(callback) {

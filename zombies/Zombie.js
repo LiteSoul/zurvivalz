@@ -1,13 +1,25 @@
-// Zombie.js
+// zombies/Zombie.js
 import * as THREE from "three";
 
-export class Zombie {
-  constructor(scene, player, game) {
+export default class Zombie {
+  constructor(
+    scene,
+    player,
+    game,
+    health,
+    speed,
+    size,
+    spritePath,
+    scoreValue
+  ) {
     this.scene = scene;
     this.player = player;
     this.game = game;
-    this.health = 40;
-    this.speed = 2 + Math.random(); // Slight speed variation
+    this.scoreValue = scoreValue;
+    this.health = health;
+    this.speed = speed;
+    this.size = size;
+    this.spritePath = spritePath;
     this.model = this.createModel();
     this.scene.add(this.model);
     this.collided = false; // Flag to prevent continuous damage
@@ -16,7 +28,7 @@ export class Zombie {
   createModel() {
     // Load the zombie sprite texture
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load("/zombie.png");
+    const texture = textureLoader.load(this.spritePath);
 
     // Create the sprite material
     const material = new THREE.SpriteMaterial({ map: texture });
@@ -24,15 +36,15 @@ export class Zombie {
     // Create the sprite
     const sprite = new THREE.Sprite(material);
 
-    // Scale the sprite (adjust as needed)
-    sprite.scale.set(0.01 * 128, 0.01 * 168, 1);
+    // Scale the sprite
+    sprite.scale.set(this.size * 0.02 * 128, this.size * 0.02 * 168, 1);
 
     // Spawn randomly within 50 units of player
     const angle = Math.random() * Math.PI * 2;
     const radius = 20 + Math.random() * 30;
     sprite.position.set(
       this.player.position.x + Math.cos(angle) * radius,
-      0.84, // Center height to align with ground:  y = 1.68 / 2 = 0.84.
+      this.size * 0.84 * 2, // Adjusted vertical position based on size. y = 1.68 / 2 = 0.84
       this.player.position.z + Math.sin(angle) * radius
     );
     return sprite;
@@ -61,6 +73,7 @@ export class Zombie {
     this.health -= amount;
     if (this.health <= 0) {
       this.scene.remove(this.model);
+      this.game.score += this.scoreValue; // Increment score on zombie death.
       return true; // Indicate zombie is dead
     }
     return false;

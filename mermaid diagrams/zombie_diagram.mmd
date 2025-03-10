@@ -1,0 +1,19 @@
+graph LR
+    A[Player] --> B(Camera)
+    C[Zombie Sprite] --> B
+    B -.-> C
+    
+    subgraph Zombie.js
+        D[createModel] --> E{Load Texture}
+        E --> F(Create SpriteMaterial)
+        F --> G(Create Sprite)
+        G --> H[Return Sprite]
+    end
+    
+    subgraph main.js
+        I[Game Loop] --> J(Update Zombie)
+    end
+    
+    J --> K(Move Zombie)
+    J --> L{Collision Detection}
+    L --> M{Distance Check}
