@@ -266,7 +266,7 @@ class Game {
     this.ammo--;
     this.ui.updateAmmo(this.ammo);
     this.canShoot = false;
-    setTimeout(() => (this.canShoot = true), this.shootCooldown * 1000);
+    setTimeout(() => (this.canShoot = true), this.shootCooldown * 200);
 
     // Play shooting sound
     if (this.shootSound.isPlaying) this.shootSound.stop();
