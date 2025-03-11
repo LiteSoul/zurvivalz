@@ -39,6 +39,33 @@ export class UI {
     this.ammoElement.style.color = "white";
     this.ammoElement.style.fontSize = "24px";
     document.body.appendChild(this.ammoElement);
+
+    // Wave display
+    this.waveElement = document.createElement("div");
+    this.waveElement.style.position = "absolute";
+    this.waveElement.style.top = "40px"; // Position below score
+    this.waveElement.style.right = "10px";
+    this.waveElement.style.color = "white";
+    this.waveElement.style.fontSize = "24px";
+    document.body.appendChild(this.waveElement);
+
+    // Enemy count display
+    this.enemyCountElement = document.createElement("div");
+    this.enemyCountElement.style.position = "absolute";
+    this.enemyCountElement.style.top = "70px"; // Position below wave
+    this.enemyCountElement.style.right = "10px";
+    this.enemyCountElement.style.color = "white";
+    this.enemyCountElement.style.fontSize = "24px";
+    document.body.appendChild(this.enemyCountElement);
+
+    // Kill count display
+    this.killCountElement = document.createElement("div");
+    this.killCountElement.style.position = "absolute";
+    this.killCountElement.style.top = "70px"; // Position below ammo
+    this.killCountElement.style.left = "10px";
+    this.killCountElement.style.color = "white";
+    this.killCountElement.style.fontSize = "24px";
+    document.body.appendChild(this.killCountElement);
   }
 
   updateHealth(health) {
@@ -48,9 +75,20 @@ export class UI {
   updateScore(score) {
     this.scoreElement.innerHTML = `Score: ${score}`;
   }
-
   updateAmmo(ammo) {
     this.ammoElement.innerHTML = `Ammo: ${ammo}`;
+  }
+
+  updateWave(wave) {
+    this.waveElement.innerHTML = `Wave: ${wave}`;
+  }
+
+  updateEnemyCount(enemyCount) {
+    this.enemyCountElement.innerHTML = `Enemies: ${enemyCount}`;
+  }
+
+  updateKillCount(killCount) {
+    this.killCountElement.innerHTML = `Kills: ${killCount}`;
   }
 
   showGameOver(callback) {

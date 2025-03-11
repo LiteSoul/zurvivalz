@@ -69,6 +69,7 @@ export class WaveManager {
     // Remove dead zombies from the array
     for (let i = this.zombies.length - 1; i >= 0; i--) {
       if (this.zombies[i].health <= 0) {
+        this.game.incrementKillCount(); // Increment kill count when zombie dies
         this.zombies.splice(i, 1);
       }
     }

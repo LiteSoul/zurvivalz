@@ -55,6 +55,14 @@ class Game {
     this.isStarted = false;
     this.isPaused = false;
 
+    // Kill count
+    this.killCount = 0;
+
+    // Method to increment kill count
+    this.incrementKillCount = () => {
+      this.killCount++;
+    };
+
     // Ammo System
     this.ammo = 20;
 
@@ -451,6 +459,9 @@ class Game {
     this.ui.updateHealth(this.health);
     this.ui.updateScore(this.score);
     this.ui.updateAmmo(this.ammo);
+    this.ui.updateWave(this.waveManager.wave); // Update wave display
+    this.ui.updateEnemyCount(this.waveManager.zombies.length); // Update enemy count
+    this.ui.updateKillCount(this.killCount); // Update kill count
 
     // Raycast for crosshair color change
     const crosshairDirection = new THREE.Vector3();
