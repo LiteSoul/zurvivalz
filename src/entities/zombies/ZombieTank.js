@@ -1,4 +1,3 @@
-// zombies/ZombieTank.js
 import Zombie from "./Zombie.js";
 
 export default class ZombieTank extends Zombie {

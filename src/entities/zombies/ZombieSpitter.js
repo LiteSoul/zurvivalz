@@ -1,4 +1,3 @@
-// zombies/ZombieSpitter.js
 import Zombie from "./Zombie.js";
 
 export default class ZombieSpitter extends Zombie {

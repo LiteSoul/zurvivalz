@@ -1,4 +1,3 @@
-// zombies/Zombie.js
 import * as THREE from "three";
 
 export default class Zombie {

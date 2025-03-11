@@ -5,7 +5,6 @@ import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { WaveManager } from "../managers/WaveManager.js"; // Manages zombie spawning and updates
 import { UI } from "../ui/UI.js"; // Handles health, score, and game over UI
-import { Bullet } from "../entities/bullets/Bullet.js";
 
 class Game {
   constructor() {

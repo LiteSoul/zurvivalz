@@ -1,4 +1,3 @@
-// WaveManager.js
 import { AmmoMagazine } from "../entities/items/AmmoMagazine.js";
 import * as THREE from "three";
 import ZombieWalker from "../entities/zombies/ZombieWalker.js";
