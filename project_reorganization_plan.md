@@ -28,7 +28,7 @@ graph LR
     root --> package.json
     root --> package-lock.json
     root --> readme.md
-    root --> mermaid diagrams[/mermaid diagrams/]
+    root --> mermaid_diagrams[/mermaid diagrams/]
     subgraph root
         index.html
         main.js
