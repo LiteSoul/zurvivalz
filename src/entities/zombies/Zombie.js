@@ -6,10 +6,10 @@ export default class Zombie {
     scene,
     player,
     game,
+    spritePath,
     health,
     speed,
     size,
-    spritePath,
     scoreValue
   ) {
     this.scene = scene;

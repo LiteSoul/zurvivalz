@@ -7,11 +7,11 @@ export default class ZombieSpitter extends Zombie {
       scene,
       player,
       game,
-      40,
-      1.8,
-      0.8,
-      "public/images/zombies/spitter.png",
-      25
+      "public/images/zombies/spitter.png", // spritePath
+      40, // health
+      1.8, // speed
+      0.8, // size
+      25 // scoreValue
     );
   }
 }

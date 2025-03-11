@@ -7,11 +7,11 @@ export default class ZombieWalker extends Zombie {
       scene,
       player,
       game,
-      50,
-      1.5,
-      0.8,
-      "public/images/zombies/walker.png",
-      10
+      "public/images/zombies/walker.png", // spritePath
+      50, // health
+      1.5, // speed
+      0.8, // size
+      10 // scoreValue
     );
   }
 }

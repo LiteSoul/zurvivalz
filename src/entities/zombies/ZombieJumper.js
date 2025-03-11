@@ -7,11 +7,11 @@ export default class ZombieJumper extends Zombie {
       scene,
       player,
       game,
-      60,
-      2.0,
-      0.9,
-      "public/images/zombies/jumper.png",
-      20
+      "public/images/zombies/jumper.png", // spritePath
+      60, // health
+      2.0, // speed
+      0.9, // size
+      20 // scoreValue
     );
   }
 }

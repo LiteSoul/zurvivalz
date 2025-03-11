@@ -7,11 +7,11 @@ export default class ZombieRunner extends Zombie {
       scene,
       player,
       game,
-      75,
-      3.0,
-      1.0,
-      "public/images/zombies/runner.png",
-      15
+      "public/images/zombies/runner.png", // spritePath
+      75, // health
+      3.0, // speed
+      1.0, // size
+      15 // scoreValue
     );
   }
 }
