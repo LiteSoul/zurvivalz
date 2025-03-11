@@ -78,4 +78,7 @@ export default class Zombie {
     }
     return false;
   }
+  isDead() {
+    return this.health <= 0;
+  }
 }

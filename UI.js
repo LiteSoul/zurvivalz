@@ -51,6 +51,7 @@ export class UI {
   }
 
   updateAmmo(ammo) {
+    console.log("UI updateAmmo:", ammo);
     this.ammoElement.innerHTML = `Ammo: ${ammo}`;
   }
 
@@ -61,5 +62,14 @@ export class UI {
 
   hideGameOver() {
     this.gameOverElement.style.display = "none";
+  }
+
+  showStartButton(isResume) {
+    const startButton = document.getElementById("startButton");
+    startButton.innerText = isResume ? "Resume" : "Start";
+    startButton.style.display = "block";
+  }
+  hideStartButton() {
+    document.getElementById("startButton").style.display = "none";
   }
 }
