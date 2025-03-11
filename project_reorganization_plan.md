@@ -35,7 +35,7 @@ graph LR
         package.json
         package-lock.json
         readme.md
-        mermaid diagrams
+        mermaid_diagrams
         subgraph src
             core
             engine
