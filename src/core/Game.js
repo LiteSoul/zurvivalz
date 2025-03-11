@@ -3,9 +3,8 @@ import { PointerLockControls } from "three/examples/jsm/controls/PointerLockCont
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
-import { WaveManager } from "./WaveManager.js"; // Manages zombie spawning and updates
-import { UI } from "./UI.js"; // Handles health, score, and game over UI
-import { Bullet } from "./Bullet.js";
+import { WaveManager } from "../managers/WaveManager.js"; // Manages zombie spawning and updates
+import { UI } from "../ui/UI.js"; // Handles health, score, and game over UI
 
 class Game {
   constructor() {
@@ -93,7 +92,9 @@ class Game {
   setupEnvironment() {
     this.scene.background = new THREE.Color(0x87ceeb);
     const textureLoader = new THREE.TextureLoader();
-    const groundTexture = textureLoader.load("images/ground.jpg");
+    const groundTexture = textureLoader.load(
+      "assets/images/environment/textures/ground.jpg"
+    );
     groundTexture.wrapS = THREE.RepeatWrapping;
     groundTexture.wrapT = THREE.RepeatWrapping;
     groundTexture.repeat.set(100, 100);
@@ -134,7 +135,7 @@ class Game {
     this.camera.add(listener);
     this.shootSound = new THREE.Audio(listener);
     const audioLoader = new THREE.AudioLoader();
-    audioLoader.load("/shoot.wav", (buffer) => {
+    audioLoader.load("assets/audio/weapons/shoot.wav", (buffer) => {
       this.shootSound.setBuffer(buffer);
       this.shootSound.setVolume(0.5);
     });

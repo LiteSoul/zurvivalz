@@ -1,4 +1,3 @@
-// UI.js
 export class UI {
   constructor() {
     // Health display

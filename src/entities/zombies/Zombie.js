@@ -1,4 +1,3 @@
-// zombies/Zombie.js
 import * as THREE from "three";
 
 export default class Zombie {
@@ -6,10 +5,10 @@ export default class Zombie {
     scene,
     player,
     game,
+    spritePath,
     health,
     speed,
     size,
-    spritePath,
     scoreValue
   ) {
     this.scene = scene;
@@ -28,7 +27,9 @@ export default class Zombie {
   createModel() {
     // Load the zombie sprite texture
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load(this.spritePath);
+    const texture = textureLoader.load(
+      `assets/images/zombies/${this.spritePath}`
+    );
 
     // Create the sprite material
     const material = new THREE.SpriteMaterial({ map: texture });

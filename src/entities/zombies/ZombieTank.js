@@ -1,4 +1,3 @@
-// zombies/ZombieTank.js
 import Zombie from "./Zombie.js";
 
 export default class ZombieTank extends Zombie {
@@ -7,11 +6,11 @@ export default class ZombieTank extends Zombie {
       scene,
       player,
       game,
-      200,
-      1.0,
-      1.5,
-      "public/images/zombies/tank.png",
-      30
+      "tank.png", // spritePath
+      200, // health
+      1.0, // speed
+      1.5, // size
+      30 // scoreValue
     );
   }
 }

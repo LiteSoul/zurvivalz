@@ -1,11 +1,10 @@
-// WaveManager.js
-import { AmmoMagazine } from "./AmmoMagazine.js";
+import { AmmoMagazine } from "../entities/items/AmmoMagazine.js";
 import * as THREE from "three";
-import ZombieWalker from "./zombies/ZombieWalker.js";
-import ZombieRunner from "./zombies/ZombieRunner.js";
-import ZombieTank from "./zombies/ZombieTank.js";
-import ZombieJumper from "./zombies/ZombieJumper.js";
-import ZombieSpitter from "./zombies/ZombieSpitter.js";
+import ZombieWalker from "../entities/zombies/ZombieWalker.js";
+import ZombieRunner from "../entities/zombies/ZombieRunner.js";
+import ZombieTank from "../entities/zombies/ZombieTank.js";
+import ZombieJumper from "../entities/zombies/ZombieJumper.js";
+import ZombieSpitter from "../entities/zombies/ZombieSpitter.js";
 
 export class WaveManager {
   constructor(scene, playerCamera, game) {
