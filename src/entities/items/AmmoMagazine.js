@@ -11,7 +11,7 @@ export class AmmoMagazine {
 
   createModel() {
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load("images/ammo.png");
+    const texture = textureLoader.load("assets/images/items/ammo.png");
     const material = new THREE.SpriteMaterial({ map: texture });
     const sprite = new THREE.Sprite(material);
     sprite.scale.set(0.32, 0.32, 1); // Assuming 32x32 pixels

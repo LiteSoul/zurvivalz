@@ -7,7 +7,7 @@ export default class ZombieTank extends Zombie {
       scene,
       player,
       game,
-      "public/images/zombies/tank.png", // spritePath
+      "tank.png", // spritePath
       200, // health
       1.0, // speed
       1.5, // size
