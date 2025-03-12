@@ -53,21 +53,21 @@ export class UI {
     // Enemy count display, below wave
     this.enemyCountElement = document.createElement("div");
     this.enemyCountElement.style.cssText = uiStyle;
-    this.enemyCountElement.style.top = "70px"; // Below Wave
+    this.enemyCountElement.style.top = "112px"; // Below Wave
     this.enemyCountElement.style.right = "20px"; // Adjusted right
     document.body.appendChild(this.enemyCountElement);
 
     // Kill count display, below enemies
     this.killCountElement = document.createElement("div");
     this.killCountElement.style.cssText = uiStyle;
-    this.killCountElement.style.top = "100px"; // Below Enemy count
+    this.killCountElement.style.top = "158px"; // Below Enemy count
     this.killCountElement.style.right = "20px"; // Adjusted right
     document.body.appendChild(this.killCountElement);
 
     // Wave display, top right
     this.waveElement = document.createElement("div");
     this.waveElement.style.cssText = uiStyle;
-    this.waveElement.style.top = "50px"; // Adjusted top
+    this.waveElement.style.top = "66px"; // Adjusted top
     this.waveElement.style.right = "20px"; // Adjusted right
     document.body.appendChild(this.waveElement);
 
